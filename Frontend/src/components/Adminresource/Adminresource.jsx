@@ -536,10 +536,10 @@ const AdminResource = () => {
           display: inline-block;
         }
         
-        .st-line {
+       .st-line {
           width: 40px;
           height: 2px;
-          background: #2e7d32;
+          background: #6b6757;
           opacity: 0.6;
           border-radius: 2px;
         }
@@ -552,7 +552,7 @@ const AdminResource = () => {
           margin: 20px 0 24px 0;
         }
         
-        .st-mandala {
+       .st-mandala {
           display: inline-block;
           animation: rotateMandala 20s linear infinite;
         }
@@ -561,7 +561,6 @@ const AdminResource = () => {
           width: 32px;
           height: 32px;
           opacity: 0.7;
-        }
       `}</style>
 
       <main style={{ maxWidth: '1440px', margin: '0 auto' }}>
@@ -572,7 +571,7 @@ const AdminResource = () => {
             Resource Management
           </h1>
           <p style={{ color: '#2e7d32', fontSize: '15px', fontWeight: '500' }}>
-            Admin Dashboard - Manage campus facilities and equipment
+            
           </p>
           
           {/* Decorative Divider with Rotating Mandala Image */}

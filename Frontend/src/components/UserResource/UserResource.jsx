@@ -290,24 +290,24 @@ const UserResource = () => {
         .availability-value {
           font-size: 12px;
           font-weight: 600;
-          color: #3b82f6;
-          background: #eff6ff;
+          color: #b38b59;
+          background: #fff4e8;
           padding: 3px 10px;
           borderRadius: 20px;
           display: inline-block;
         }
         
         .book-btn {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          background: #b38b59;
           color: white;
           border: none;
           transition: all 0.2s ease;
         }
         
         .book-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: #9a784c;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+          box-shadow: 0 4px 12px rgba(179, 139, 89, 0.3);
         }
         
         .book-btn:active:not(:disabled) {
@@ -349,8 +349,8 @@ const UserResource = () => {
         
         .filter-input:focus {
           outline: none;
-          border-color: #94a3b8;
-          box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+          border-color: #b38b59;
+          box-shadow: 0 0 0 3px rgba(179, 139, 89, 0.1);
         }
         
         .st-line {
@@ -435,8 +435,8 @@ const UserResource = () => {
                   backgroundColor: '#fefefe'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#94a3b8';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(148, 163, 184, 0.1)';
+                  e.target.style.borderColor = '#b38b59';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(179, 139, 89, 0.1)';
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = '#e2e8f0';
@@ -489,7 +489,7 @@ const UserResource = () => {
                 className="filter-input"
               />
               {filters.capacity && !isNaN(parseInt(filters.capacity)) && (
-                <p style={{ fontSize: '10px', color: '#3b82f6', marginTop: '4px', marginLeft: '4px' }}>
+                <p style={{ fontSize: '10px', color: '#b38b59', marginTop: '4px', marginLeft: '4px' }}>
                   Showing resources with capacity ≥ {parseInt(filters.capacity)}
                 </p>
               )}
@@ -673,7 +673,7 @@ const UserResource = () => {
                   </div>
                 </div>
                 
-                {/* Book Button - Professional Blue Gradient */}
+                {/* Book Button - Professional Warm Brown Color */}
                 <button
                   disabled={resource.status === 'OUT_OF_SERVICE'}
                   className={resource.status === 'OUT_OF_SERVICE' ? 'disabled-btn' : 'book-btn'}
@@ -687,19 +687,19 @@ const UserResource = () => {
                     fontFamily: 'inherit',
                     ...(resource.status === 'OUT_OF_SERVICE' 
                       ? { background: '#f1f5f9', color: '#94a3b8', border: '1px solid #e2e8f0' }
-                      : { background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: 'white', border: 'none' }
+                      : { background: '#b38b59', color: 'white', border: 'none' }
                     )
                   }}
                   onMouseEnter={(e) => {
                     if (resource.status !== 'OUT_OF_SERVICE') {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                      e.currentTarget.style.background = '#9a784c';
                       e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.25)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(179, 139, 89, 0.3)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (resource.status !== 'OUT_OF_SERVICE') {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                      e.currentTarget.style.background = '#b38b59';
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = 'none';
                     }
