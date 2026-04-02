@@ -1,10 +1,11 @@
 package com.SmartCampus.SmartCampus.Entity.enums;
 
+
 public enum Category {
-    FACILITIES,
-    IT,
-    SECURITY,
-    CLEANING,
-    TRANSPORT,
+    ELECTRICAL,
+    PLUMBING,
+    EQUIPMENT,
+    NETWORK,
+    FURNITURE,
     OTHER
 }
