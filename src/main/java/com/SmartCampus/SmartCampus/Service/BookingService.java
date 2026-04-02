@@ -6,6 +6,8 @@ import com.SmartCampus.SmartCampus.Repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class BookingService {
 
@@ -14,7 +16,6 @@ public class BookingService {
 
     public Booking createBooking(Booking bookingRequest) {
         
-        // Check for conflicts
         long conflicts = bookingRepository.countConflictingBookings(
                 bookingRequest.getResourceId(),
                 bookingRequest.getStartTime(),
@@ -25,8 +26,8 @@ public class BookingService {
             throw new RuntimeException("This resource is already booked for this time slot.");
         }
 
-        // Set default status to PENDING
         bookingRequest.setStatus(BookingStatus.PENDING);
+        bookingRequest.setCreatedAt(LocalDateTime.now());
         
         return bookingRepository.save(bookingRequest);
     }

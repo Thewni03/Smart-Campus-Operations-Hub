@@ -1,13 +1,13 @@
 package com.SmartCampus.SmartCampus.Entity;
 
 import com.SmartCampus.SmartCampus.Entity.enums.BookingStatus;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "bookings")
+@Document(collection = "bookings")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,34 +16,17 @@ import java.time.LocalDateTime;
 public class Booking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
-    private Long resourceId;
+    private String resourceId;
+    private String userId;
 
-    @Column(nullable = false)
-    private Long userId;
-
-    @Column(nullable = false)
     private LocalDateTime startTime;
-
-    @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private BookingStatus status;
-
     private String purpose;
-
-    private String adminReason; // Nullable, populated if rejected/cancelled
+    private String adminReason;
     
-    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 }
