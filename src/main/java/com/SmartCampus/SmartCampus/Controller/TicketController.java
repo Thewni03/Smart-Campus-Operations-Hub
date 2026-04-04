@@ -68,6 +68,7 @@ public class TicketController {
     }
 
     @PatchMapping("/{id}/assign")
+    //temporally ...
     //@PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN')")
     public ResponseEntity<ApiResponse<TicketResponse>> assignTechnician(
             @PathVariable String id,
