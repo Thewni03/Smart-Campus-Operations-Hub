@@ -10,16 +10,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Security configuration for Member 3 — Ticketing module.
- *
- * INTEGRATION NOTE FOR MEMBER 4:
- * When JWT auth is ready, add the JwtAuthFilter bean here:
- *   .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
- * and replace permitAll() with role-based rules below.
- *
- * Current state: CSRF disabled, all endpoints open — for local dev testing only.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity   // enables @PreAuthorize on controller methods
