@@ -95,7 +95,6 @@ const AdminDashboardPage = () => {
 
       <div style={{maxWidth:"1060px",margin:"0 auto",padding:"0 28px"}}>
 
-        {/* ── Hero ── */}
         <div style={{padding:"44px 0 32px"}}>
           <p style={{fontFamily:"'Baloo 2',sans-serif",fontSize:".75rem",
             fontWeight:700,textTransform:"uppercase",letterSpacing:".16em",
@@ -110,7 +109,6 @@ const AdminDashboardPage = () => {
           </p>
         </div>
 
-        {/* ── Stats ── */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"14px",marginBottom:"32px"}}>
           {STATS(tickets,unassigned,inProgress,resolved).map(s => (
             <div key={s.label} style={{
@@ -228,7 +226,7 @@ const AdminDashboardPage = () => {
           )}
         </div>
 
-        {/* ── Reject ticket ── */}
+    
         <div style={card}>
           <div style={{padding:"18px 24px",borderBottom:"1px solid rgba(23,48,66,.08)"}}>
             <h2 style={{fontFamily:"'Baloo 2',sans-serif",
