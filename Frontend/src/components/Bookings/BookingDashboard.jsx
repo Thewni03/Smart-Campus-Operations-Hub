@@ -5,6 +5,9 @@ export default function BookingDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // MOCK DATA since auth UI context isn't fully integrated into this module yet
+  const ADMIN_ID = "admin-101";
+
   const fetchBookings = async () => {
     try {
       const res = await axios.get('/api/bookings');
@@ -22,9 +25,14 @@ export default function BookingDashboard() {
     fetchBookings();
   }, []);
 
-  const updateStatus = async (id, newStatus) => {
+  const updateStatus = async (id, newStatus, reason = null) => {
     try {
-      const res = await axios.put(`/api/bookings/${id}/status?status=${newStatus}`);
+      let queryUrl = `/api/bookings/${id}/status?status=${newStatus}&reviewedBy=${ADMIN_ID}`;
+      if (reason) {
+        queryUrl += `&rejectionReason=${encodeURIComponent(reason)}`;
+      }
+      
+      const res = await axios.put(queryUrl);
       if (res.data.success) {
         fetchBookings();
       }
@@ -32,6 +40,17 @@ export default function BookingDashboard() {
       alert(error.response?.data?.message || 'Error updating status');
     }
   };
+
+  const handleActionClick = (bookingId, actionType) => {
+      if (actionType === 'REJECTED') {
+          const reason = prompt("Please enter a reason for rejection:");
+          if (reason !== null) {
+              updateStatus(bookingId, 'REJECTED', reason);
+          }
+      } else {
+          updateStatus(bookingId, actionType);
+      }
+  }
 
   const deleteBooking = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pending booking?")) return;
@@ -55,6 +74,11 @@ export default function BookingDashboard() {
     }
   };
 
+  // Safe rendering of dates to avoid null mismatches
+  const renderDate = (booking) => {
+      return booking.bookingDate || 'N/A';
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -70,7 +94,7 @@ export default function BookingDashboard() {
           <div className="sm:flex-auto">
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Bookings Management</h1>
             <p className="mt-2 text-sm text-slate-600">
-              A list of all resource booking requests including their status, time, and purpose.
+              Administrative view to verify and process resource requests.
             </p>
           </div>
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -91,8 +115,8 @@ export default function BookingDashboard() {
                   <thead className="bg-slate-50">
                     <tr>
                       <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">Resource ID</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">User ID</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Time Window</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">User / Attendees</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Date & Time</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Status</th>
                       <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                         <span className="sr-only">Actions</span>
@@ -109,22 +133,33 @@ export default function BookingDashboard() {
                         <tr key={booking.id} className="hover:bg-slate-50 transition-colors duration-150">
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
                             {booking.resourceId}
+                            {booking.rejectionReason && (
+                                <div className="text-xs text-rose-500 font-normal mt-1 max-w-[150px] truncate" title={booking.rejectionReason}>
+                                    Reason: {booking.rejectionReason}
+                                </div>
+                            )}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">{booking.userId}</td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                            <div>{new Date(booking.startTime).toLocaleString()}</div>
-                            <div className="text-slate-400 text-xs mt-0.5">to {new Date(booking.endTime).toLocaleString()}</div>
+                              <div>{booking.userId}</div>
+                              <div className="text-slate-400 text-xs mt-0.5">Attendees: {booking.expectedAttendees || 'N/A'}</div>
+                           </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                            <div className="font-medium text-slate-700">{renderDate(booking)}</div>
+                            <div className="text-slate-400 text-xs mt-0.5">{booking.startTime || '?'} to {booking.endTime || '?'}</div>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(booking.status)}`}>
                               {booking.status}
                             </span>
+                            {booking.reviewedBy && (
+                                <div className="text-[10px] text-slate-400 mt-1">By: {booking.reviewedBy}</div>
+                            )}
                           </td>
                           <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex gap-2 justify-end">
                             {booking.status === 'PENDING' && (
                               <>
-                                <button onClick={() => updateStatus(booking.id, 'APPROVED')} className="text-emerald-600 hover:text-emerald-900">Approve</button>
-                                <button onClick={() => updateStatus(booking.id, 'REJECTED')} className="text-rose-600 hover:text-rose-900">Reject</button>
+                                <button onClick={() => handleActionClick(booking.id, 'APPROVED')} className="text-emerald-600 hover:text-emerald-900">Approve</button>
+                                <button onClick={() => handleActionClick(booking.id, 'REJECTED')} className="text-rose-600 hover:text-rose-900">Reject</button>
                                 <button onClick={() => deleteBooking(booking.id)} className="text-slate-400 hover:text-slate-600">Delete</button>
                               </>
                             )}

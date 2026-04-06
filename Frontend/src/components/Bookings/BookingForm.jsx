@@ -4,9 +4,11 @@ import axios from 'axios';
 export default function BookingForm() {
   const [formData, setFormData] = useState({
     resourceId: '',
-    userId: 'user123', // Hardcoded for now since auth isn't fully integrated in UI state yet
+    userId: 'user123', // Admin/Sys will track real ID later
+    bookingDate: '',
     startTime: '',
     endTime: '',
+    expectedAttendees: '',
     purpose: '',
   });
   const [loading, setLoading] = useState(false);
@@ -21,11 +23,17 @@ export default function BookingForm() {
     setLoading(true);
     setMessage('');
     
+    // Convert expectedAttendees string to actual number before sending
+    const payload = {
+        ...formData,
+        expectedAttendees: formData.expectedAttendees ? parseInt(formData.expectedAttendees, 10) : null
+    };
+    
     try {
-      const response = await axios.post('/api/bookings', formData);
+      const response = await axios.post('/api/bookings', payload);
       if (response.data.success) {
         setMessage('success: ' + response.data.message);
-        setFormData({ ...formData, resourceId: '', startTime: '', endTime: '', purpose: '' });
+        setFormData({ ...formData, resourceId: '', bookingDate: '', startTime: '', endTime: '', expectedAttendees: '', purpose: '' });
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to create booking';
@@ -61,13 +69,27 @@ export default function BookingForm() {
                 onChange={handleChange}
               />
             </div>
+            
+            <div>
+              <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Booking Date</label>
+              <input
+                id="bookingDate"
+                name="bookingDate"
+                type="date"
+                required
+                className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
+                value={formData.bookingDate}
+                onChange={handleChange}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="startTime" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Start Time</label>
                 <input
                   id="startTime"
                   name="startTime"
-                  type="datetime-local"
+                  type="time"
                   required
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
                   value={formData.startTime}
@@ -79,7 +101,7 @@ export default function BookingForm() {
                 <input
                   id="endTime"
                   name="endTime"
-                  type="datetime-local"
+                  type="time"
                   required
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
                   value={formData.endTime}
@@ -87,6 +109,23 @@ export default function BookingForm() {
                 />
               </div>
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label htmlFor="expectedAttendees" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Expected Attendees</label>
+                <input
+                  id="expectedAttendees"
+                  name="expectedAttendees"
+                  type="number"
+                  min="1"
+                  className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  placeholder="e.g. 15"
+                  value={formData.expectedAttendees}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="purpose" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Purpose of Booking</label>
               <textarea

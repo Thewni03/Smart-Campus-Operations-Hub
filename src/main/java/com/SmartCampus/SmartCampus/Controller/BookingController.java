@@ -49,9 +49,10 @@ public class BookingController {
     public ResponseEntity<ApiResponse<Booking>> updateBookingStatus(
             @PathVariable String id,
             @RequestParam BookingStatus status,
-            @RequestParam(required = false) String adminReason) {
+            @RequestParam(required = false) String rejectionReason,
+            @RequestParam(required = false) String reviewedBy) {
         try {
-            Booking updatedBooking = bookingService.updateStatus(id, status, adminReason);
+            Booking updatedBooking = bookingService.updateStatus(id, status, rejectionReason, reviewedBy);
             return ResponseEntity.ok(ApiResponse.success("Booking status updated to " + status, updatedBooking));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

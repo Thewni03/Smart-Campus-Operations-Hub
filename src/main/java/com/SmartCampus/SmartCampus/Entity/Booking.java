@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.LocalDateTime;
 
 @Document(collection = "bookings")
@@ -21,12 +23,16 @@ public class Booking {
     private String resourceId;
     private String userId;
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDate bookingDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+
+    private Integer expectedAttendees;
 
     private BookingStatus status;
     private String purpose;
-    private String adminReason;
+    private String rejectionReason;
+    private String reviewedBy;
     
     private LocalDateTime createdAt;
 }

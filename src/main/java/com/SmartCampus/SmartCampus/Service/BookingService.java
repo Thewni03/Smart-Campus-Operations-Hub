@@ -18,6 +18,7 @@ public class BookingService {
         
         long conflicts = bookingRepository.countConflictingBookings(
                 bookingRequest.getResourceId(),
+                bookingRequest.getBookingDate(),
                 bookingRequest.getStartTime(),
                 bookingRequest.getEndTime()
         );
@@ -40,12 +41,15 @@ public class BookingService {
         return bookingRepository.findByUserId(userId);
     }
 
-    public Booking updateStatus(String id, BookingStatus status, String adminReason) {
+    public Booking updateStatus(String id, BookingStatus status, String rejectionReason, String reviewedBy) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found."));
         booking.setStatus(status);
-        if (adminReason != null && !adminReason.isEmpty()) {
-            booking.setAdminReason(adminReason);
+        if (rejectionReason != null && !rejectionReason.isEmpty()) {
+            booking.setRejectionReason(rejectionReason);
+        }
+        if (reviewedBy != null && !reviewedBy.isEmpty()) {
+            booking.setReviewedBy(reviewedBy);
         }
         return bookingRepository.save(booking);
     }
