@@ -31,4 +31,31 @@ public class BookingService {
         
         return bookingRepository.save(bookingRequest);
     }
+
+    public java.util.List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
+
+    public java.util.List<Booking> getBookingsByUser(String userId) {
+        return bookingRepository.findByUserId(userId);
+    }
+
+    public Booking updateStatus(String id, BookingStatus status, String adminReason) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found."));
+        booking.setStatus(status);
+        if (adminReason != null && !adminReason.isEmpty()) {
+            booking.setAdminReason(adminReason);
+        }
+        return bookingRepository.save(booking);
+    }
+
+    public void deleteBooking(String id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found."));
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Can only delete PENDING bookings.");
+        }
+        bookingRepository.deleteById(id);
+    }
 }

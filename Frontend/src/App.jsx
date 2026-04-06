@@ -16,6 +16,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 import UserResource from "./components/UserResource/UserResource";
 import AdminResource from "./components/Adminresource/Adminresource";
+import BookingForm from "./components/Bookings/BookingForm";
+import BookingDashboard from "./components/Bookings/BookingDashboard";
 
 const MainLayout = ({ children }) => (
   <>
@@ -193,6 +195,22 @@ function App() {
             element={
               <AdminRoute>
                 <AdminResource />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/book"
+            element={
+              <ProtectedRoute>
+                <BookingForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-bookings"
+            element={
+              <AdminRoute>
+                <BookingDashboard />
               </AdminRoute>
             }
           />
