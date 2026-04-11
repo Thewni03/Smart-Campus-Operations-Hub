@@ -1029,4 +1029,383 @@
     padding: 22px 20px;
     border-radius: 24px;
   }
+
+
+  /* --- TICKET DETAIL SPECIFIC STYLES --- */
+
+/* Section Headers (EVIDENCE PHOTOS, DISCUSSION, etc) */
+.section-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #173042;
+  margin-bottom: 16px;
+  display: block;
+}
+
+/* Discussion / Evidence Content */
+.detail-empty-state {
+  color: #556574;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+/* Upload & Input Area */
+.upload-zone {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.upload-zone p {
+  font-size: 0.85rem;
+  color: #70828e;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* Timeline Cards (Right Side) */
+.timeline-card-inner {
+  background: rgba(255, 255, 255, 0.5); /* Semi-transparent glass */
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.timeline-card-inner span {
+  display: block;
+  font-size: 0.75rem;
+  color: #70828e;
+  margin-bottom: 4px;
+}
+
+.timeline-card-inner strong {
+  display: block;
+  font-size: 1rem;
+  color: #173042;
+}
+
+/* Vertical Workflow List */
+.workflow-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.workflow-step__num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #70828e;
+  padding-top: 2px;
+}
+
+.workflow-step__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #173042;
+}
+
+.workflow-step--active .workflow-step__label {
+  color: #ff5a6d; /* SmartCampus Coral */
+}
+
+/* Comment Input Styling */
+.comment-input-wrapper {
+  display: flex;
+  gap: 8px;
+  background: #f8fafb;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #d4dde5;
+}
+
+.comment-input-wrapper input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.comment-post-btn {
+  background: #e2e8f0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.comment-post-btn--active {
+  background: #173042;
+  color: white;
+}
+
+/* Background Logic for the "Dark Bottom" effect */
+.dashboard-page {
+  /* This creates the split look seen in your image */
+  background: linear-gradient(180deg, #FDF7F2 60%, #173042 60%);
+  min-height: 100vh;
+}
+/* ============================= */
+/* GLOBAL UI POLISH              */
+/* ============================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #173042;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth transitions everywhere */
+
+button,
+a,
+input,
+select,
+textarea {
+  transition: all 0.2s ease;
+}
+
+/* ============================= */
+/* CARD HOVER EFFECTS            */
+/* ============================= */
+
+.summary-card,
+.home-panel,
+.auth-card,
+.home-media-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.summary-card:hover,
+.home-panel:hover,
+.auth-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 56px rgba(23, 48, 66, 0.14);
+}
+
+/* ============================= */
+/* BUTTON IMPROVEMENTS           */
+/* ============================= */
+
+.home-button,
+.auth-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-button::after,
+.auth-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.25),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.home-button:hover::after,
+.auth-button:hover::after {
+  opacity: 1;
+}
+
+/* ============================= */
+/* TICKET CARDS (LIST PAGE)      */
+/* ============================= */
+
+.ticket-card {
+  border-radius: 20px;
+  padding: 18px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(23,48,66,0.08);
+  box-shadow: 0 14px 28px rgba(23,48,66,0.08);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.ticket-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 50px rgba(23,48,66,0.14);
+}
+
+.ticket-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.ticket-card p {
+  font-size: .9rem;
+  color: #667b89;
+}
+
+/* ============================= */
+/* STATUS BADGES                 */
+/* ============================= */
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.status-open {
+  background: #eef6ff;
+  color: #1a6fb5;
+}
+
+.status-progress {
+  background: #fff6e8;
+  color: #d47a0c;
+}
+
+.status-resolved {
+  background: #e8f7ef;
+  color: #1a7a4a;
+}
+
+.status-rejected {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+
+/* ============================= */
+/* COMMENT LIST IMPROVEMENT      */
+/* ============================= */
+
+.comment-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f6f8fa;
+  border: 1px solid rgba(23,48,66,.06);
+}
+
+.comment-item strong {
+  font-size: .85rem;
+}
+
+.comment-item span {
+  font-size: .8rem;
+  color: #70828e;
+}
+
+/* ============================= */
+/* ATTACHMENT GRID               */
+/* ============================= */
+
+.attachment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(110px,1fr));
+  gap: 10px;
+}
+
+.attachment-grid img {
+  width: 100%;
+  border-radius: 10px;
+  transition: transform .2s ease;
+}
+
+.attachment-grid img:hover {
+  transform: scale(1.05);
+}
+
+/* ============================= */
+/* WORKFLOW STEPS                */
+/* ============================= */
+
+.workflow-step {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(23,48,66,.08);
+}
+
+.workflow-step--active {
+  background: rgba(255, 244, 229, 0.92);
+  border-color: #ff5a6d;
+}
+
+/* ============================= */
+/* PAGE CONTAINER IMPROVEMENT    */
+/* ============================= */
+
+.page-container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px 24px 60px;
+}
+
+/* ============================= */
+/* SCROLLBAR (MODERN LOOK)       */
+/* ============================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(23,48,66,.25);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23,48,66,.4);
+}
+
+/* ============================= */
+/* SOFT FLOAT ANIMATION          */
+/* ============================= */
+
+@keyframes floatSoft {
+
+  0% { transform: translateY(0); }
+
+  50% { transform: translateY(-3px); }
+
+  100% { transform: translateY(0); }
+
+}
+
+.home-showcase__visual {
+  animation: floatSoft 6s ease-in-out infinite;
+}
+
+/* ============================= */
+/* MOBILE POLISH                 */
+/* ============================= */
+
+@media (max-width:768px){
+
+.ticket-card{
+  padding:14px;
+}
+
+.home-showcase{
+  padding:20px;
+}
+
+}
 }
