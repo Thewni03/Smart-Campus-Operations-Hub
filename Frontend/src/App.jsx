@@ -37,10 +37,16 @@ const PublicOnlyRoute = ({ children }) => {
   const { user } = useAuth();
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return children;
+};
+
+const RootRoute = () => {
+  const { user } = useAuth();
+
+  return <Navigate to={user ? "/home" : "/login"} replace />;
 };
 
 function App() {
@@ -48,8 +54,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<RootRoute />} />
           <Route
-            path="/"
+            path="/home"
             element={
               <ProtectedRoute>
                 <HomePage />

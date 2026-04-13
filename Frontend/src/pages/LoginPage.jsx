@@ -49,7 +49,7 @@ const LoginPage = () => {
           "session-active"
         );
 
-        navigate("/");
+        navigate("/home");
       })
       .catch((error) => {
         setMessage(

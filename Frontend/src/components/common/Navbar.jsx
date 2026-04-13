@@ -5,7 +5,7 @@ const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const navItems = [
-    { to: "/", label: "Home" },
+    { to: "/home", label: "Home" },
     { to: "/dashboard", label: "Dashboard" },
     { to: "/tickets", label: "Tickets" },
     { to: "/tickets/create", label: "Create Ticket" },
@@ -19,7 +19,7 @@ const Navbar = () => {
   return (
     <nav className="topbar">
       <div className="topbar__left">
-        <NavLink to="/" className="topbar__brand">
+        <NavLink to="/home" className="topbar__brand">
           <span className="topbar__brand-mark">SC</span>
           <span className="topbar__brand-text">
             <strong>SmartCampus</strong>
