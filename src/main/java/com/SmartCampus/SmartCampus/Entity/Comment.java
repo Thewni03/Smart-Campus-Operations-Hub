@@ -21,7 +21,7 @@ public class Comment {
     private String ticketId;     // references Ticket._id
     private String authorId;     // references User._id (from auth service)
     private String authorName;   // stored for display (denormalized)
-    private String authorRole;   // USER | ADMIN | TECHNICIAN
+    private String authorRole;   // STUDENT | ADMIN | TECHNICIAN
 
     private String content;
 

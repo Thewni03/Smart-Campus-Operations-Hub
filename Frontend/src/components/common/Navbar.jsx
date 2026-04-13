@@ -1,9 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const navItems = [
+    { to: "/", label: "Home" },
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/tickets", label: "Tickets" },
+    { to: "/tickets/create", label: "Create Ticket" },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -11,38 +17,58 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-6">
-        <Link to="/" className="font-bold text-gray-900 text-lg tracking-tight">
-          SmartCampus
-        </Link>
-        <div className="flex gap-4 text-sm">
-          <Link to="/tickets" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Tickets
-          </Link>
-          <Link to="/tickets/create" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Report Incident
-          </Link>
+    <nav className="topbar">
+      <div className="topbar__left">
+        <NavLink to="/" className="topbar__brand">
+          <span className="topbar__brand-mark">SC</span>
+          <span className="topbar__brand-text">
+            <strong>SmartCampus</strong>
+            <small>Operations Hub</small>
+          </span>
+        </NavLink>
+      </div>
+
+      <div className="topbar__nav-shell">
+        <div className="topbar__nav">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `topbar__link ${isActive ? "topbar__link--active" : ""}`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
           {isAdmin() && (
-            <Link to="/admin" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `topbar__link ${isActive ? "topbar__link--active" : ""}`
+              }
+            >
               Admin
-            </Link>
+            </NavLink>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="topbar__right">
         {user && (
-          <span className="text-sm text-gray-500">
-            {user.name || user.email}
-            <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {user.role}
+          <span className="topbar__user">
+            <span className="topbar__user-copy">
+              <strong>{user.name || user.email}</strong>
+              <small>{user.role}</small>
+            </span>
+            <span className="topbar__role">
+              Account
             </span>
           </span>
         )}
         <button
           onClick={handleLogout}
-          className="text-sm text-red-500 hover:text-red-700 transition-colors"
+          className="topbar__logout"
         >
           Logout
         </button>

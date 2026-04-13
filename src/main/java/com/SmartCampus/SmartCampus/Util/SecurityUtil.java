@@ -30,7 +30,7 @@ public class SecurityUtil {
             throw new UnauthorizedActionException("User is not authenticated");
         }
 
-        // TODO: Replace with JwtUserDetails cast once Member 4's JWT is integrated
+        // Swap this stub for a JwtUserDetails cast after JWT integration is added.
         // JwtUserDetails user = (JwtUserDetails) auth.getPrincipal();
         // return user.getId();
 
@@ -51,7 +51,7 @@ public class SecurityUtil {
         return auth.getAuthorities().stream()
                 .findFirst()
                 .map(Object::toString)
-                .orElse("ROLE_USER");
+                .orElse("ROLE_STUDENT");
     }
 
     /**

@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  const login = (userData, jwtToken) => {
+  const login = (userData, jwtToken = "session-active") => {
     setUser(userData);
     setToken(jwtToken);
     localStorage.setItem("user", JSON.stringify(userData));

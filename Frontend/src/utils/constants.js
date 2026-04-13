@@ -22,8 +22,8 @@ export const TICKET_STATUS = {
     OTHER: "OTHER",
   };
   
-  export const ROLES = {
-    USER: "USER",
+export const ROLES = {
+    STUDENT: "STUDENT",
     ADMIN: "ADMIN",
     TECHNICIAN: "TECHNICIAN",
   };

@@ -5,7 +5,7 @@ import { formatDateTime } from "../../utils/formatDate";
 const roleColors = {
   ADMIN:      "bg-gray-800 text-white",
   TECHNICIAN: "bg-amber-500 text-white",
-  USER:       "bg-blue-600 text-white",
+  STUDENT:    "bg-blue-600 text-white",
 };
 
 const CommentItem = ({ comment, onEdit, onDelete }) => {

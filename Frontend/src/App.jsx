@@ -1,14 +1,16 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/common/Navbar";
 
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import TicketListPage from "./pages/TicketListPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import CreateTicketPage from "./pages/CreateTicketPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import UserDashboardPage from "./pages/UserDashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import UserResource from "./components/UserResource/UserResource";
@@ -21,23 +23,119 @@ const MainLayout = ({ children }) => (
   </>
 );
 
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
+};
+
+const PublicOnlyRoute = ({ children }) => {
+  const { user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/tickets"element={<MainLayout><TicketListPage /></MainLayout>}/>
-          <Route path="/tickets/create"element={<MainLayout><CreateTicketPage /></MainLayout>}/>
-          <Route path="/tickets/:id" element={<MainLayout><TicketDetailPage /></MainLayout>}/>
-          <Route path="/admin"element={<MainLayout> <AdminDashboardPage /></MainLayout>}/>
-          <Route path="/resource"element={ <MainLayout> <UserResource /> </MainLayout> } />
-          <Route path="/admin-resources" element={ <MainLayout> <AdminResource /> </MainLayout>}/>
-          <Route path="*" element={<MainLayout> <NotFoundPage /></MainLayout>}/>
-
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicOnlyRoute>
+                <LoginPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicOnlyRoute>
+                <SignupPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <UserDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tickets"
+            element={
+              <ProtectedRoute>
+                <TicketListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tickets/create"
+            element={
+              <ProtectedRoute>
+                <CreateTicketPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tickets/:id"
+            element={
+              <ProtectedRoute>
+                <TicketDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resource"
+            element={
+              <ProtectedRoute>
+                <UserResource />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-resources"
+            element={
+              <ProtectedRoute>
+                <AdminResource />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <ProtectedRoute>
+                <NotFoundPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
@@ -45,4 +143,3 @@ function App() {
 }
 
 export default App;
-

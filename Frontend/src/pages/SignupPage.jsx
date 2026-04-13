@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signupUser } from "../api/authApi";
+import { ROLES } from "../utils/constants";
 
 const SignupPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    role: 'Student',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    email: "",
+    role: ROLES.STUDENT,
+    password: "",
+    confirmPassword: "",
     agree: false,
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -23,18 +27,41 @@ const SignupPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-      setMessage('Please complete all required fields.');
+      setMessage("Please complete all required fields.");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setMessage('Passwords do not match.');
+      setMessage("Passwords do not match.");
       return;
     }
     if (!formData.agree) {
-      setMessage('Please accept the terms to continue.');
+      setMessage("Please accept the terms to continue.");
       return;
     }
-    setMessage(`Account created for ${formData.fullName}. You can now log in.`);
+
+    setSubmitting(true);
+    setMessage("");
+
+    signupUser({
+      fullName: formData.fullName,
+      email: formData.email,
+      role: formData.role,
+      oauthProvider: "LOCAL",
+      oauthId: formData.email,
+      password: formData.password,
+    })
+      .then((response) => {
+        setMessage(response.data.message || "Account created successfully.");
+        window.setTimeout(() => navigate("/login"), 900);
+      })
+      .catch((error) => {
+        setMessage(
+          error.response?.data?.message || "Signup failed. Please try again."
+        );
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -113,10 +140,9 @@ const SignupPage = () => {
                     boxSizing: 'border-box',
                   }}
                 >
-                  <option>Student</option>
-                  <option>Lecturer</option>
-                  <option>Administrator</option>
-                  <option>Operations Staff</option>
+                  <option value={ROLES.STUDENT}>Student</option>
+                  <option value={ROLES.TECHNICIAN}>Technician</option>
+                  <option value={ROLES.ADMIN}>Admin</option>
                 </select>
               </label>
             </div>
@@ -199,6 +225,7 @@ const SignupPage = () => {
 
             <button
               type="submit"
+              disabled={submitting}
               style={{
                 border: 'none',
                 borderRadius: '16px',
@@ -207,10 +234,11 @@ const SignupPage = () => {
                 color: '#fff',
                 font: 'inherit',
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: submitting ? "not-allowed" : 'pointer',
+                opacity: submitting ? 0.7 : 1,
               }}
             >
-              Create Account
+              {submitting ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 

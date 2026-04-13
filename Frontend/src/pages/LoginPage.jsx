@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     remember: false,
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -20,10 +25,40 @@ const LoginPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!formData.email || !formData.password) {
-      setMessage('Please enter your email and password.');
+      setMessage("Please enter your email and password.");
       return;
     }
-    setMessage(`Welcome back. ${formData.email} is ready to sign in.`);
+
+    setSubmitting(true);
+    setMessage("");
+
+    loginUser({
+      email: formData.email,
+      password: formData.password,
+    })
+      .then((response) => {
+        const authUser = response.data.data;
+
+        login(
+          {
+            userId: authUser.userId,
+            name: authUser.fullName,
+            email: authUser.email,
+            role: authUser.role,
+          },
+          "session-active"
+        );
+
+        navigate("/");
+      })
+      .catch((error) => {
+        setMessage(
+          error.response?.data?.message || "Login failed. Please try again."
+        );
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -135,11 +170,12 @@ const LoginPage = () => {
                 />
                 <span>Remember me</span>
               </label>
-              <Link to="/" style={{ color: '#9a5d10', textDecoration: 'none', fontWeight: 600 }}>Forgot password?</Link>
+              <Link to="/signup" style={{ color: '#9a5d10', textDecoration: 'none', fontWeight: 600 }}>Need an account?</Link>
             </div>
 
             <button
               type="submit"
+              disabled={submitting}
               style={{
                 border: 'none',
                 borderRadius: '16px',
@@ -148,10 +184,11 @@ const LoginPage = () => {
                 color: '#fff',
                 font: 'inherit',
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: submitting ? "not-allowed" : 'pointer',
+                opacity: submitting ? 0.7 : 1,
               }}
             >
-              Log In
+              {submitting ? "Logging in..." : "Log In"}
             </button>
           </form>
 

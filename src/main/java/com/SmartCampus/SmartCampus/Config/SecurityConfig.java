@@ -32,8 +32,7 @@ public class SecurityConfig {
                         // Uploads served as static files
                         .requestMatchers("/uploads/**").permitAll()
 
-                        // Everything else requires authentication
-                        // TODO: replace permitAll() with .authenticated() once Member 4 JWT is wired in
+                        // Everything else can be tightened to .authenticated() after JWT wiring is added.
                         .anyRequest().permitAll()
                 );
 
