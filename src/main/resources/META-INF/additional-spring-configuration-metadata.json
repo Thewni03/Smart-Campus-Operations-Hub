@@ -4,6 +4,26 @@
       "name": "file.upload-dir",
       "type": "java.lang.String",
       "description": "Directory used to store uploaded files."
+    },
+    {
+      "name": "app.admin.seed.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to create the configured admin account on startup if it does not exist."
+    },
+    {
+      "name": "app.admin.full-name",
+      "type": "java.lang.String",
+      "description": "Display name used for the seeded admin account."
+    },
+    {
+      "name": "app.admin.email",
+      "type": "java.lang.String",
+      "description": "Email address used for the seeded admin account."
+    },
+    {
+      "name": "app.admin.password",
+      "type": "java.lang.String",
+      "description": "Password used for the seeded admin account."
     }
   ]
 }

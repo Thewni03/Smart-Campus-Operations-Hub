@@ -9,11 +9,12 @@ const roleColors = {
 };
 
 const CommentItem = ({ comment, onEdit, onDelete }) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
 
   const isOwner = user?.id === comment.authorId || user?.email === comment.authorId;
+  const canManage = isOwner || isAdmin();
 
   const handleSave = () => {
     if (editText.trim()) {
@@ -56,7 +57,7 @@ const CommentItem = ({ comment, onEdit, onDelete }) => {
           </div>
         )}
 
-        {isOwner && !editing && (
+        {canManage && !editing && (
           <div className="flex gap-3 mt-1">
             <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-blue-600 transition-colors">Edit</button>
             <button onClick={() => onDelete(comment.id)} className="text-xs text-gray-400 hover:text-red-600 transition-colors">Delete</button>

@@ -23,6 +23,8 @@ const MainLayout = ({ children }) => (
   </>
 );
 
+const getDefaultRoute = (user) => (user?.role === "ADMIN" ? "/admin" : "/home");
+
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
 
@@ -33,11 +35,39 @@ const ProtectedRoute = ({ children }) => {
   return <MainLayout>{children}</MainLayout>;
 };
 
+const UserRoute = ({ children }) => {
+  const { user, isAdmin } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isAdmin()) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, isAdmin } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin()) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
+};
+
 const PublicOnlyRoute = ({ children }) => {
   const { user } = useAuth();
 
   if (user) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to={getDefaultRoute(user)} replace />;
   }
 
   return children;
@@ -46,7 +76,7 @@ const PublicOnlyRoute = ({ children }) => {
 const RootRoute = () => {
   const { user } = useAuth();
 
-  return <Navigate to={user ? "/home" : "/login"} replace />;
+  return <Navigate to={user ? getDefaultRoute(user) : "/login"} replace />;
 };
 
 function App() {
@@ -58,9 +88,9 @@ function App() {
           <Route
             path="/home"
             element={
-              <ProtectedRoute>
+              <UserRoute>
                 <HomePage />
-              </ProtectedRoute>
+              </UserRoute>
             }
           />
           <Route
@@ -82,9 +112,9 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <UserRoute>
                 <UserDashboardPage />
-              </ProtectedRoute>
+              </UserRoute>
             }
           />
           <Route
@@ -114,25 +144,25 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminDashboardPage />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
             path="/resource"
             element={
-              <ProtectedRoute>
+              <UserRoute>
                 <UserResource />
-              </ProtectedRoute>
+              </UserRoute>
             }
           />
           <Route
             path="/admin-resources"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminResource />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
