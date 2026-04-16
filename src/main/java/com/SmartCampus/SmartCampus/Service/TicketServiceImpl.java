@@ -55,6 +55,16 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketResponse getTicketById(String id) {
         Ticket ticket = findTicketOrThrow(id);
+        String currentUserId = securityUtil.getCurrentUserId();
+
+        boolean canView = securityUtil.isAdmin()
+                || currentUserId.equals(ticket.getReportedBy())
+                || currentUserId.equals(ticket.getAssignedTo());
+
+        if (!canView) {
+            throw new UnauthorizedActionException("You are not allowed to view this ticket");
+        }
+
         return mapToTicketResponse(ticket);
     }
 
@@ -83,14 +93,22 @@ public class TicketServiceImpl implements TicketService {
     public List<TicketSummaryResponse> getAllTicketsFiltered(TicketStatus status, Priority priority) {
         List<Ticket> tickets;
 
-        if (status != null && priority != null) {
-            tickets = ticketRepository.findByStatusAndPriority(status, priority);
-        } else if (status != null) {
-            tickets = ticketRepository.findByStatus(status);
-        } else if (priority != null) {
-            tickets = ticketRepository.findByPriority(priority);
+        if (securityUtil.isAdmin()) {
+            if (status != null && priority != null) {
+                tickets = ticketRepository.findByStatusAndPriority(status, priority);
+            } else if (status != null) {
+                tickets = ticketRepository.findByStatus(status);
+            } else if (priority != null) {
+                tickets = ticketRepository.findByPriority(priority);
+            } else {
+                tickets = ticketRepository.findAll();
+            }
         } else {
-            tickets = ticketRepository.findAll();
+            String userId = securityUtil.getCurrentUserId();
+            tickets = ticketRepository.findByReportedBy(userId).stream()
+                    .filter(ticket -> status == null || ticket.getStatus() == status)
+                    .filter(ticket -> priority == null || ticket.getPriority() == priority)
+                    .toList();
         }
 
         return tickets.stream().map(this::mapToSummary).toList();
@@ -135,6 +153,10 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketResponse assignTechnician(String ticketId, String technicianId) {
+        if (!securityUtil.isAdmin()) {
+            throw new UnauthorizedActionException("Only an admin can assign a technician");
+        }
+
         Ticket ticket = findTicketOrThrow(ticketId);
         ticket.setAssignedTo(technicianId);
         ticket.setStatus(TicketStatus.IN_PROGRESS);
@@ -144,6 +166,10 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public void deleteTicket(String id) {
+        if (!securityUtil.isAdmin()) {
+            throw new UnauthorizedActionException("Only an admin can delete a ticket");
+        }
+
         Ticket ticket = findTicketOrThrow(id);
         // Cascade delete comments and attachments
         commentRepository.deleteAllByTicketId(id);

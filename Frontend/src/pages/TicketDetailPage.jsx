@@ -43,10 +43,10 @@ const TicketDetailPage = () => {
   };
 
   const glassCard = {
-    background:"rgba(255,255,255,.82)",
+    background:"rgba(255,255,255,.86)",
     border:"1px solid rgba(18,51,76,.1)",
-    borderRadius:"22px",
-    boxShadow:"0 8px 32px rgba(23,48,66,.08)",
+    borderRadius:"24px",
+    boxShadow:"0 18px 34px rgba(23,48,66,.08)",
     backdropFilter:"blur(12px)",
     overflow:"hidden",
   };
@@ -84,39 +84,49 @@ const TicketDetailPage = () => {
   return (
     <div style={{
       minHeight:"100vh",
-      background:`radial-gradient(circle at 20% 80%,rgba(255,196,112,.2),transparent 35%),
-                  linear-gradient(135deg,#f5efe4 0%,#f7f9fc 50%,#eef4f6 100%)`,
+      background:`radial-gradient(circle at top left, rgba(196, 233, 223, 0.95), transparent 24%),
+                  linear-gradient(180deg, #d9efe7 0%, #f7faf6 28%, #eef4f6 100%)`,
       fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif",
       paddingBottom:"60px",
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap');`}</style>
 
-      <div style={{maxWidth:"1060px",margin:"0 auto",padding:"0 28px"}}>
+      <div style={{maxWidth:"1100px",margin:"0 auto",padding:"0 28px"}}>
 
         {/* breadcrumb */}
         <div style={{paddingTop:"32px",marginBottom:"20px"}}>
           <button onClick={() => navigate("/tickets")}
             style={{display:"flex",alignItems:"center",gap:"5px",
-              fontSize:"13px",color:"#9a5d10",background:"none",
+              fontSize:"13px",color:"#ec6272",background:"none",
               border:"none",cursor:"pointer",padding:0,fontWeight:600}}>
             ← All Tickets
           </button>
         </div>
 
         {/* page title row */}
-        <div style={{display:"flex",alignItems:"center",gap:"14px",
+        <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:"18px",
           flexWrap:"wrap",marginBottom:"28px"}}>
-          <h1 style={{fontFamily:"'Baloo 2',sans-serif",
-            fontSize:"1.6rem",fontWeight:800,color:"#173042",
-            letterSpacing:"-.03em",margin:0}}>
-            #{id.slice(-6).toUpperCase()}
-          </h1>
-          <StatusBadge status={ticket.status}/>
-          <PriorityBadge priority={ticket.priority}/>
+          <div>
+            <p style={{margin:"0 0 6px",fontSize:".76rem",fontWeight:700,textTransform:"uppercase",letterSpacing:".16em",color:"#ec6272"}}>
+              Ticket Overview
+            </p>
+            <h1 style={{fontFamily:"'Baloo 2',sans-serif",
+              fontSize:"clamp(1.8rem,4vw,2.7rem)",fontWeight:800,color:"#173042",
+              letterSpacing:"-.04em",margin:"0 0 6px",lineHeight:1.02}}>
+              {ticket.title}
+            </h1>
+            <p style={{margin:0,color:"#6f7f98",fontSize:".95rem"}}>
+              #{id.slice(-6).toUpperCase()} • {ticket.category} • {ticket.location || "Campus location"}
+            </p>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
+            <StatusBadge status={ticket.status}/>
+            <PriorityBadge priority={ticket.priority}/>
+          </div>
         </div>
 
         {/* 2-column layout */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 320px",gap:"20px",alignItems:"start"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 330px",gap:"20px",alignItems:"start"}}>
 
           {/* ── LEFT ── */}
           <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
@@ -126,7 +136,7 @@ const TicketDetailPage = () => {
               <div style={cardHead}>
                 <h2 style={{fontFamily:"'Baloo 2',sans-serif",
                   fontSize:"1rem",fontWeight:700,color:"#173042",margin:0}}>
-                  {ticket.title}
+                  Description
                 </h2>
               </div>
               <div style={cardBody}>
@@ -135,7 +145,7 @@ const TicketDetailPage = () => {
                 </p>
                 {ticket.resolutionNotes && (
                   <div style={{marginTop:"16px",padding:"13px 16px",
-                    borderRadius:"14px",background:"#e8f5ee",
+                    borderRadius:"16px",background:"#e8f5ee",
                     border:"1px solid rgba(26,122,74,.2)"}}>
                     <p style={{fontSize:"11px",fontWeight:700,color:"#1a7a4a",
                       textTransform:"uppercase",letterSpacing:".06em",margin:"0 0 4px"}}>
@@ -148,7 +158,7 @@ const TicketDetailPage = () => {
                 )}
                 {ticket.rejectionReason && (
                   <div style={{marginTop:"16px",padding:"13px 16px",
-                    borderRadius:"14px",background:"#fde8e8",
+                    borderRadius:"16px",background:"#fde8e8",
                     border:"1px solid rgba(185,28,28,.2)"}}>
                     <p style={{fontSize:"11px",fontWeight:700,color:"#b91c1c",
                       textTransform:"uppercase",letterSpacing:".06em",margin:"0 0 4px"}}>
@@ -167,7 +177,7 @@ const TicketDetailPage = () => {
               <div style={cardHead}>
                 <span style={labelStyle}>Ticket Workflow</span>
               </div>
-              <div style={cardBody}>
+              <div style={{...cardBody, background:"rgba(248,251,255,.55)"}}>
                 <TicketWorkflow currentStatus={ticket.status}/>
               </div>
             </div>
@@ -180,7 +190,7 @@ const TicketDetailPage = () => {
                   {ticket.attachments?.length||0} / 3
                 </span>
               </div>
-              <div style={{...cardBody,display:"flex",flexDirection:"column",gap:"16px"}}>
+              <div style={{...cardBody,display:"flex",flexDirection:"column",gap:"16px", background:"rgba(248,251,255,.45)"}}>
                 <AttachmentGrid
                   ticketId={id}
                   attachments={ticket.attachments||[]}
@@ -197,7 +207,7 @@ const TicketDetailPage = () => {
               <div style={cardHead}>
                 <span style={labelStyle}>Comments & Updates</span>
               </div>
-              <div style={cardBody}>
+              <div style={{...cardBody, background:"rgba(248,251,255,.3)"}}>
                 <CommentList comments={comments} loading={cLoading}
                   onEdit={editComment} onDelete={removeComment}/>
                 <CommentForm onSubmit={postComment}/>
@@ -213,7 +223,7 @@ const TicketDetailPage = () => {
               <div style={cardHead}>
                 <span style={labelStyle}>Details</span>
               </div>
-              <div style={{padding:"16px 20px",display:"flex",flexDirection:"column",gap:"12px"}}>
+              <div style={{padding:"18px 20px",display:"flex",flexDirection:"column",gap:"12px"}}>
                 {[
                   { k:"Category",    v: ticket.category },
                   { k:"Location",    v: ticket.location || "—" },
@@ -224,7 +234,7 @@ const TicketDetailPage = () => {
                   { k:"Updated",     v: formatDateTime(ticket.updatedAt) },
                 ].map(({ k, v, warn }) => (
                   <div key={k} style={{display:"flex",justifyContent:"space-between",
-                    alignItems:"flex-start",gap:"10px"}}>
+                    alignItems:"flex-start",gap:"10px",padding:"10px 0",borderBottom:"1px solid rgba(23,48,66,.06)"}}>
                     <span style={{fontSize:"11.5px",color:"#7a8f9e"}}>{k}</span>
                     <span style={{fontSize:"12px",fontWeight:600,textAlign:"right",
                       color: warn ? "#d47a0c" : "#173042"}}>
@@ -241,10 +251,10 @@ const TicketDetailPage = () => {
                 <div style={cardHead}>
                   <span style={labelStyle}>Update Status</span>
                 </div>
-                <div style={{padding:"16px 20px",display:"flex",flexDirection:"column",gap:"12px"}}>
+                <div style={{padding:"18px 20px",display:"flex",flexDirection:"column",gap:"12px", background:"rgba(248,251,255,.45)"}}>
                   <select value={statusForm.status}
                     onChange={e => setStatusForm(p=>({...p,status:e.target.value}))}
-                    onFocus={e => e.target.style.borderColor="#d47a0c"}
+                    onFocus={e => e.target.style.borderColor="#ec6272"}
                     onBlur={e  => e.target.style.borderColor="#d4dde5"}
                     style={selectStyle}>
                     <option value="">Move to…</option>
@@ -258,7 +268,7 @@ const TicketDetailPage = () => {
                   <textarea value={statusForm.resolutionNotes} rows={2}
                     onChange={e => setStatusForm(p=>({...p,resolutionNotes:e.target.value}))}
                     placeholder="Resolution notes…"
-                    onFocus={e => e.target.style.borderColor="#d47a0c"}
+                    onFocus={e => e.target.style.borderColor="#ec6272"}
                     onBlur={e  => e.target.style.borderColor="#d4dde5"}
                     style={textareaStyle}/>
 
@@ -274,16 +284,16 @@ const TicketDetailPage = () => {
                   <button
                     onClick={handleStatusUpdate}
                     disabled={!statusForm.status || updatingStatus}
-                    onMouseOver={e=>{ if(!updatingStatus&&statusForm.status){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 10px 28px rgba(212,122,12,.42)"; }}}
-                    onMouseOut={e =>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 16px rgba(212,122,12,.25)"; }}
+                    onMouseOver={e=>{ if(!updatingStatus&&statusForm.status){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 10px 28px rgba(240,93,114,.32)"; }}}
+                    onMouseOut={e =>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 16px rgba(240,93,114,.2)"; }}
                     style={{fontFamily:"'Baloo 2',sans-serif",
                       fontSize:"13.5px",fontWeight:700,
                       padding:"11px 0",borderRadius:"14px",border:"none",
                       width:"100%",
-                      background: (!statusForm.status||updatingStatus) ? "rgba(23,48,66,.12)" : "linear-gradient(135deg,#d47a0c,#a84f00)",
+                      background: (!statusForm.status||updatingStatus) ? "rgba(23,48,66,.12)" : "linear-gradient(135deg,#f05d72,#ea5160)",
                       color: (!statusForm.status||updatingStatus) ? "#b0bec8" : "#fff",
                       cursor: (!statusForm.status||updatingStatus) ? "not-allowed" : "pointer",
-                      boxShadow:"0 4px 16px rgba(212,122,12,.25)",
+                      boxShadow:"0 4px 16px rgba(240,93,114,.2)",
                       transition:"all .2s"}}>
                     {updatingStatus ? "Saving…" : "Save Status"}
                   </button>

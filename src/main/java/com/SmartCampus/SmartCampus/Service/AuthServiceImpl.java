@@ -29,16 +29,21 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse signup(SignupRequest request) {
         // Normalize email once so signup and login use the same lookup format.
         String normalizedEmail = request.getEmail().trim().toLowerCase();
+        String requestedRole = request.getRole().trim().toUpperCase();
 
         if (userAccountRepository.existsByEmail(normalizedEmail)) {
             throw new AuthException("An account with this email already exists");
+        }
+
+        if ("ADMIN".equals(requestedRole)) {
+            throw new AuthException("Admin accounts cannot be created from signup");
         }
 
         // Store a hashed password rather than the raw password.
         UserAccount user = new UserAccount();
         user.setFullName(request.getFullName().trim());
         user.setEmail(normalizedEmail);
-        user.setRole(request.getRole().trim());
+        user.setRole(requestedRole);
         user.setOauthProvider(request.getOauthProvider().trim());
         user.setOauthId(request.getOauthId().trim());
         user.setCreatedAt(LocalDateTime.now());

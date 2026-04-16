@@ -49,7 +49,7 @@ const LoginPage = () => {
           "session-active"
         );
 
-        navigate("/home");
+        navigate(authUser.role === "ADMIN" ? "/admin" : "/home");
       })
       .catch((error) => {
         setMessage(
@@ -112,8 +112,12 @@ const LoginPage = () => {
         }}>
           <div style={{ marginBottom: '28px', textAlign: 'left' }}>
             <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: '0.78rem', fontWeight: 700, color: '#9a5d10' }}>Welcome back</p>
-            <h2 style={{ margin: '8px 0', color: '#13283a', fontSize: 'clamp(1.9rem,3vw,2.5rem)', lineHeight: 1.05 }}>Log in to your account</h2>
-            <p style={{ color: '#556574' }}>Use your campus email to continue.</p>
+            <h2 style={{ margin: '8px 0', color: '#13283a', fontSize: 'clamp(1.9rem,3vw,2.5rem)', lineHeight: 1.05 }}>
+              Log in to your account
+            </h2>
+            <p style={{ color: '#556574' }}>
+              Use your campus email to continue. Admin accounts will open the admin dashboard automatically.
+            </p>
           </div>
 
           <form style={{ display: 'grid', gap: '18px' }} onSubmit={handleSubmit}>

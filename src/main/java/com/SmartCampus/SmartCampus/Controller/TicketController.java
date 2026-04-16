@@ -67,8 +67,7 @@ public class TicketController {
     }
 
     @PatchMapping("/{id}/assign")
-    //temporally ...
-    //@PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<TicketResponse>> assignTechnician(
             @PathVariable String id,
             @RequestParam String technicianId) {
@@ -78,7 +77,7 @@ public class TicketController {
     }
 
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteTicket(@PathVariable String id) {
         ticketService.deleteTicket(id);
         return ResponseEntity.ok(ApiResponse.success("Ticket deleted successfully", null));

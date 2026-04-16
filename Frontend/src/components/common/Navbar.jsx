@@ -4,12 +4,15 @@ import { useAuth } from "../../context/AuthContext";
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const navItems = [
-    { to: "/home", label: "Home" },
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/tickets", label: "Tickets" },
-    { to: "/tickets/create", label: "Create Ticket" },
-  ];
+  const navItems = isAdmin()
+    ? [{ to: "/admin", label: "Admin Dashboard" }]
+    : [
+        { to: "/home", label: "Home" },
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/tickets", label: "Tickets" },
+        { to: "/tickets/create", label: "Create Ticket" },
+      ];
+  const brandRoute = isAdmin() ? "/admin" : "/home";
 
   const handleLogout = () => {
     logout();
@@ -19,7 +22,7 @@ const Navbar = () => {
   return (
     <nav className="topbar">
       <div className="topbar__left">
-        <NavLink to="/home" className="topbar__brand">
+        <NavLink to={brandRoute} className="topbar__brand">
           <span className="topbar__brand-mark">SC</span>
           <span className="topbar__brand-text">
             <strong>SmartCampus</strong>
@@ -41,16 +44,6 @@ const Navbar = () => {
               {item.label}
             </NavLink>
           ))}
-          {isAdmin() && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `topbar__link ${isActive ? "topbar__link--active" : ""}`
-              }
-            >
-              Admin
-            </NavLink>
-          )}
         </div>
       </div>
 
