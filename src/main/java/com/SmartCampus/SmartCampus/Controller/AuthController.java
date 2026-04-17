@@ -1,6 +1,7 @@
 package com.SmartCampus.SmartCampus.Controller;
 
 import com.SmartCampus.SmartCampus.Dto.Request.LoginRequest;
+import com.SmartCampus.SmartCampus.Dto.Request.GoogleLoginRequest;
 import com.SmartCampus.SmartCampus.Dto.Request.SignupRequest;
 import com.SmartCampus.SmartCampus.Dto.Response.ApiResponse;
 import com.SmartCampus.SmartCampus.Dto.Response.AuthResponse;
@@ -36,5 +37,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    }
+
+    // Verifies a Google ID token and signs in or creates a student account.
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        AuthResponse response = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(ApiResponse.success("Google login successful", response));
     }
 }
