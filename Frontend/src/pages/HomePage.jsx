@@ -63,9 +63,17 @@ const HomePage = () => {
               <Link to="/dashboard" className="home-button home-button--ghost">
                 Dashboard
               </Link>
+              <Link to="/resource" className="home-button home-button--ghost">
+                resourse
+              </Link>
               {isAdmin() && (
                 <Link to="/admin" className="home-button home-button--ghost">
                   Admin
+                </Link>
+              )}
+              {isAdmin() && (
+                <Link to="/admin-resources" className="home-button home-button--ghost">
+                  adminresource
                 </Link>
               )}
             </div>
