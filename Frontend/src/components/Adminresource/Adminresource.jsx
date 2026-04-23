@@ -1,90 +1,10 @@
 // filename: src/components/AdminResource.jsx
 import React, { useState, useEffect } from 'react';
 import mandala from "../../assets/mandala.png";
+import { getResources, createResource, updateResource, deleteResource } from "../../api/resourceApi";
 
 const AdminResource = () => {
-  const [resources, setResources] = useState([
-    {
-      id: 1,
-      name: 'Lecture Hall A101',
-      type: 'Lecture Hall',
-      capacity: 60,
-      location: 'A101',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 8am-6pm',
-      image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=500&h=300&fit=crop'
-    },
-    {
-      id: 2,
-      name: 'Computer Lab B203',
-      type: 'Lab',
-      capacity: 30,
-      location: 'B203',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 9am-5pm',
-      image: 'https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?w=500&h=300&fit=crop'
-    },
-    {
-      id: 3,
-      name: 'Meeting Room C305',
-      type: 'Meeting Room',
-      capacity: 12,
-      location: 'C305',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 8am-7pm',
-      image: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?w=500&h=300&fit=crop'
-    },
-    {
-      id: 4,
-      name: 'Projector X500',
-      type: 'Equipment',
-      capacity: 1,
-      location: 'AV01',
-      status: 'OUT_OF_SERVICE',
-      availability: 'Pending Repair',
-      image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&h=300&fit=crop'
-    },
-    {
-      id: 5,
-      name: 'Conference Hall',
-      type: 'Lecture Hall',
-      capacity: 120,
-      location: 'A201',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 8am-6pm',
-      image: 'https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg?w=500&h=300&fit=crop'
-    },
-    {
-      id: 6,
-      name: 'DSLR Camera Kit',
-      type: 'Equipment',
-      capacity: 1,
-      location: 'MED01',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 9am-5pm',
-      image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&h=300&fit=crop'
-    },
-    {
-      id: 7,
-      name: 'Physics Lab D101',
-      type: 'Lab',
-      capacity: 40,
-      location: 'D101',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 8am-4pm',
-      image: 'https://images.pexels.com/photos/256490/pexels-photo-256490.jpeg?w=500&h=300&fit=crop'
-    },
-    {
-      id: 8,
-      name: 'Smart Board Pro',
-      type: 'Equipment',
-      capacity: 1,
-      location: 'B105',
-      status: 'ACTIVE',
-      availability: 'Mon-Fri, 8am-6pm',
-      image: 'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=500&h=300&fit=crop'
-    }
-  ]);
+  const [resources, setResources] = useState([]);
 
   const [filters, setFilters] = useState({
     search: '',
@@ -105,7 +25,7 @@ const AdminResource = () => {
     location: '',
     status: 'ACTIVE',
     availability: '',
-    image: ''
+    images: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +35,17 @@ const AdminResource = () => {
   const statusOptions = ['ACTIVE', 'OUT_OF_SERVICE'];
 
   useEffect(() => {
-    setTimeout(() => setIsLoading(false), 500);
+    const fetchResources = async () => {
+      try {
+        const data = await getResources();
+        setResources(data);
+      } catch (error) {
+        console.error("Failed to fetch resources", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchResources();
   }, []);
 
   // Dashboard statistics
@@ -162,40 +92,55 @@ const AdminResource = () => {
   };
 
   // Add new resource
-  const handleAddResource = () => {
+  const handleAddResource = async () => {
     if (!validateForm()) return;
-    
-    const newResource = {
-      id: Math.max(...resources.map(r => r.id), 0) + 1,
-      ...formData,
-      capacity: parseInt(formData.capacity),
-      image: formData.image || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=500&h=300&fit=crop'
-    };
-    setResources([...resources, newResource]);
-    setShowAddModal(false);
-    resetForm();
+
+    try {
+      const imagesArray = formData.images ? formData.images.split(',').map(i => i.trim()).filter(i => i !== '') : ['https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=500&h=300&fit=crop'];
+      const resourceData = {
+        ...formData,
+        capacity: parseInt(formData.capacity),
+        images: imagesArray
+      };
+      const newResource = await createResource(resourceData);
+      setResources([...resources, newResource]);
+      setShowAddModal(false);
+      resetForm();
+    } catch (error) {
+      console.error("Failed to add resource", error);
+    }
   };
 
   // Edit resource
-  const handleEditResource = () => {
+  const handleEditResource = async () => {
     if (!validateForm()) return;
-    
-    const updatedResources = resources.map(r => 
-      r.id === selectedResource.id 
-        ? { ...r, ...formData, capacity: parseInt(formData.capacity) }
-        : r
-    );
-    setResources(updatedResources);
-    setShowEditModal(false);
-    resetForm();
+
+    try {
+      const imagesArray = formData.images ? formData.images.split(',').map(i => i.trim()).filter(i => i !== '') : [];
+      const resourceData = { ...formData, capacity: parseInt(formData.capacity), images: imagesArray };
+      const updatedResource = await updateResource(selectedResource.id, resourceData);
+      const updatedResources = resources.map(r =>
+        r.id === selectedResource.id ? updatedResource : r
+      );
+      setResources(updatedResources);
+      setShowEditModal(false);
+      resetForm();
+    } catch (error) {
+      console.error("Failed to update resource", error);
+    }
   };
 
   // Delete resource
-  const handleDeleteResource = () => {
-    const updatedResources = resources.filter(r => r.id !== selectedResource.id);
-    setResources(updatedResources);
-    setShowDeleteConfirm(false);
-    setSelectedResource(null);
+  const handleDeleteResource = async () => {
+    try {
+      await deleteResource(selectedResource.id);
+      const updatedResources = resources.filter(r => r.id !== selectedResource.id);
+      setResources(updatedResources);
+      setShowDeleteConfirm(false);
+      setSelectedResource(null);
+    } catch (error) {
+      console.error("Failed to delete resource", error);
+    }
   };
 
   // Reset form
@@ -207,7 +152,7 @@ const AdminResource = () => {
       location: '',
       status: 'ACTIVE',
       availability: '',
-      image: ''
+      images: ''
     });
     setFormErrors({});
   };
@@ -222,7 +167,7 @@ const AdminResource = () => {
       location: resource.location,
       status: resource.status,
       availability: resource.availability,
-      image: resource.image
+      images: resource.images ? resource.images.join(', ') : ''
     });
     setShowEditModal(true);
   };
@@ -252,33 +197,33 @@ const AdminResource = () => {
 
   const getTypeBadgeStyle = (type) => {
     const colors = {
-      'Lecture Hall': { 
+      'Lecture Hall': {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: '#ffffff'
       },
-      'Lab': { 
+      'Lab': {
         background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
         color: '#ffffff'
       },
-      'Meeting Room': { 
+      'Meeting Room': {
         background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)',
         color: '#ffffff'
       },
-      'Equipment': { 
+      'Equipment': {
         background: 'linear-gradient(135deg, #9f7aea 0%, #805ad5 100%)',
         color: '#ffffff'
       }
     };
-    return { 
-      padding: '4px 12px', 
-      borderRadius: '20px', 
-      fontSize: '11px', 
-      fontWeight: '600', 
+    return {
+      padding: '4px 12px',
+      borderRadius: '20px',
+      fontSize: '11px',
+      fontWeight: '600',
       display: 'inline-block',
       letterSpacing: '0.3px',
       textTransform: 'uppercase',
       boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-      ...colors[type] 
+      ...colors[type]
     };
   };
 
@@ -564,16 +509,16 @@ const AdminResource = () => {
       `}</style>
 
       <main style={{ maxWidth: '1440px', margin: '0 auto' }}>
-        
+
         {/* Header with Decorative Divider */}
         <div style={{ textAlign: 'center', marginBottom: '32px', animation: 'fadeInUp 0.5s ease-out' }}>
           <h1 style={{ fontSize: '36px', fontWeight: '800', color: '#1e293b', marginBottom: '8px' }}>
             Resource Management
           </h1>
           <p style={{ color: '#2e7d32', fontSize: '15px', fontWeight: '500' }}>
-            
+
           </p>
-          
+
           {/* Decorative Divider with Rotating Mandala Image */}
           <div className="st-hero-divider">
             <span className="st-line"></span>
@@ -610,18 +555,18 @@ const AdminResource = () => {
               type="text"
               placeholder="Search by name..."
               value={filters.search}
-              onChange={(e) => setFilters({...filters, search: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', width: '200px', background: 'white' }}
             />
-            <select className="filter-select" value={filters.type} onChange={(e) => setFilters({...filters, type: e.target.value})}>
+            <select className="filter-select" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
               <option value="">All Types</option>
               {typeOptions.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-            <select className="filter-select" value={filters.location} onChange={(e) => setFilters({...filters, location: e.target.value})}>
+            <select className="filter-select" value={filters.location} onChange={(e) => setFilters({ ...filters, location: e.target.value })}>
               <option value="">All Locations</option>
               {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
-            <select className="filter-select" value={filters.status} onChange={(e) => setFilters({...filters, status: e.target.value})}>
+            <select className="filter-select" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
               <option value="">All Status</option>
               <option value="ACTIVE">ACTIVE</option>
               <option value="OUT_OF_SERVICE">OUT_OF_SERVICE</option>
@@ -630,7 +575,7 @@ const AdminResource = () => {
               type="text"
               placeholder="Min Capacity"
               value={filters.capacity}
-              onChange={(e) => setFilters({...filters, capacity: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, capacity: e.target.value })}
               style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', width: '100px', background: 'white' }}
             />
             <button className="btn-secondary" onClick={clearFilters}>Clear Filters</button>
@@ -698,32 +643,32 @@ const AdminResource = () => {
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>Add New Resource</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Name *</label>
-                  <input className="form-input" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  <input className="form-input" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                   {formErrors.name && <p className="error-text">{formErrors.name}</p>}</div>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Type *</label>
-                  <select className="form-input" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                  <select className="form-input" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
                     <option value="">Select Type</option>
                     {typeOptions.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {formErrors.type && <p className="error-text">{formErrors.type}</p>}</div>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Capacity *</label>
-                  <input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({...formData, capacity: e.target.value})} />
+                  <input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
                   {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Location *</label>
-                  <select className="form-input" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})}>
+                  <select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
                     <option value="">Select Location</option>
                     {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                   {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Status</label>
-                  <select className="form-input" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+                  <select className="form-input" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                     {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
                   </select></div>
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Availability Window *</label>
-                  <input className="form-input" placeholder="e.g., Mon-Fri, 8am-6pm" value={formData.availability} onChange={(e) => setFormData({...formData, availability: e.target.value})} />
+                  <input className="form-input" placeholder="e.g., Mon-Fri, 8am-6pm" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })} />
                   {formErrors.availability && <p className="error-text">{formErrors.availability}</p>}</div>
-                <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Image URL (optional)</label>
-                  <input className="form-input" placeholder="https://..." value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} /></div>
+                <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Image URLs (comma separated)</label>
+                  <input className="form-input" placeholder="https://img1..., https://img2..." value={formData.images} onChange={(e) => setFormData({ ...formData, images: e.target.value })} /></div>
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
                 <button className="btn-secondary" onClick={() => { setShowAddModal(false); resetForm(); }}>Cancel</button>
@@ -739,20 +684,21 @@ const AdminResource = () => {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>Edit Resource</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div><label>Name *</label><input className="form-input" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                <div><label>Name *</label><input className="form-input" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                   {formErrors.name && <p className="error-text">{formErrors.name}</p>}</div>
-                <div><label>Type *</label><select className="form-input" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                <div><label>Type *</label><select className="form-input" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
                   <option value="">Select Type</option>{typeOptions.map(t => <option key={t} value={t}>{t}</option>)}</select>
                   {formErrors.type && <p className="error-text">{formErrors.type}</p>}</div>
-                <div><label>Capacity *</label><input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({...formData, capacity: e.target.value})} />
+                <div><label>Capacity *</label><input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
                   {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
-                <div><label>Location *</label><select className="form-input" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})}>
+                <div><label>Location *</label><select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
                   <option value="">Select Location</option>{locationOptions.map(l => <option key={l} value={l}>{l}</option>)}</select>
                   {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
-                <div><label>Status</label><select className="form-input" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+                <div><label>Status</label><select className="form-input" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                   {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
-                <div><label>Availability Window *</label><input className="form-input" value={formData.availability} onChange={(e) => setFormData({...formData, availability: e.target.value})} />
+                <div><label>Availability Window *</label><input className="form-input" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })} />
                   {formErrors.availability && <p className="error-text">{formErrors.availability}</p>}</div>
+                <div><label>Image URLs (comma separated)</label><input className="form-input" value={formData.images} onChange={(e) => setFormData({ ...formData, images: e.target.value })} /></div>
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
                 <button className="btn-secondary" onClick={() => { setShowEditModal(false); resetForm(); }}>Cancel</button>

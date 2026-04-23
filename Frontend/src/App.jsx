@@ -173,6 +173,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>
