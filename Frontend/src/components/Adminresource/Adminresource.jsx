@@ -83,9 +83,11 @@ const AdminResource = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = 'Resource name is required';
     if (!formData.type) errors.type = 'Resource type is required';
-    if (!formData.capacity) errors.capacity = 'Capacity is required';
-    else if (isNaN(formData.capacity) || formData.capacity <= 0) errors.capacity = 'Capacity must be a positive number';
-    if (!formData.location) errors.location = 'Location is required';
+    if (formData.type !== 'Equipment') {
+      if (!formData.capacity) errors.capacity = 'Capacity is required';
+      else if (isNaN(formData.capacity) || formData.capacity <= 0) errors.capacity = 'Capacity must be a positive number';
+      if (!formData.location) errors.location = 'Location is required';
+    }
     if (!formData.availability) errors.availability = 'Availability window is required';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -99,7 +101,8 @@ const AdminResource = () => {
       const imagesArray = formData.images ? formData.images.split(',').map(i => i.trim()).filter(i => i !== '') : ['https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=500&h=300&fit=crop'];
       const resourceData = {
         ...formData,
-        capacity: parseInt(formData.capacity),
+        capacity: formData.type === 'Equipment' ? 0 : parseInt(formData.capacity),
+        location: formData.type === 'Equipment' ? 'N/A' : formData.location,
         images: imagesArray
       };
       const newResource = await createResource(resourceData);
@@ -117,7 +120,12 @@ const AdminResource = () => {
 
     try {
       const imagesArray = formData.images ? formData.images.split(',').map(i => i.trim()).filter(i => i !== '') : [];
-      const resourceData = { ...formData, capacity: parseInt(formData.capacity), images: imagesArray };
+      const resourceData = { 
+        ...formData, 
+        capacity: formData.type === 'Equipment' ? 0 : parseInt(formData.capacity), 
+        location: formData.type === 'Equipment' ? 'N/A' : formData.location,
+        images: imagesArray 
+      };
       const updatedResource = await updateResource(selectedResource.id, resourceData);
       const updatedResources = resources.map(r =>
         r.id === selectedResource.id ? updatedResource : r
@@ -651,15 +659,19 @@ const AdminResource = () => {
                     {typeOptions.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {formErrors.type && <p className="error-text">{formErrors.type}</p>}</div>
-                <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Capacity *</label>
-                  <input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
-                  {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
-                <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Location *</label>
-                  <select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
-                    <option value="">Select Location</option>
-                    {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
-                  {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
+                {formData.type !== 'Equipment' && (
+                  <>
+                    <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Capacity *</label>
+                      <input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
+                      {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
+                    <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Location *</label>
+                      <select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
+                        <option value="">Select Location</option>
+                        {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
+                  </>
+                )}
                 <div><label style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>Status</label>
                   <select className="form-input" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                     {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
@@ -689,11 +701,15 @@ const AdminResource = () => {
                 <div><label>Type *</label><select className="form-input" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
                   <option value="">Select Type</option>{typeOptions.map(t => <option key={t} value={t}>{t}</option>)}</select>
                   {formErrors.type && <p className="error-text">{formErrors.type}</p>}</div>
-                <div><label>Capacity *</label><input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
-                  {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
-                <div><label>Location *</label><select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
-                  <option value="">Select Location</option>{locationOptions.map(l => <option key={l} value={l}>{l}</option>)}</select>
-                  {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
+                {formData.type !== 'Equipment' && (
+                  <>
+                    <div><label>Capacity *</label><input type="number" className="form-input" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
+                      {formErrors.capacity && <p className="error-text">{formErrors.capacity}</p>}</div>
+                    <div><label>Location *</label><select className="form-input" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })}>
+                      <option value="">Select Location</option>{locationOptions.map(l => <option key={l} value={l}>{l}</option>)}</select>
+                      {formErrors.location && <p className="error-text">{formErrors.location}</p>}</div>
+                  </>
+                )}
                 <div><label>Status</label><select className="form-input" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                   {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                 <div><label>Availability Window *</label><input className="form-input" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })} />
