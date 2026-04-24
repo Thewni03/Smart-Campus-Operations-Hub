@@ -5,6 +5,7 @@ import { assignTechnician, deleteTicket, updateTicketStatus } from "../api/ticke
 import { StatusBadge, PriorityBadge } from "../components/tickets/TicketStatusBadge";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
+import AdminResource from "../components/Adminresource/Adminresource";
 
 const TECHNICIANS = [
   { id: "tech-001", name: "Kavindu Perera" },
@@ -16,6 +17,7 @@ const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "◫" },
   { id: "bookings", label: "Bookings", icon: "◧" },
   { id: "tickets", label: "Tickets", icon: "◎" },
+  { id: "resources", label: "Resources", icon: "❒" },
 ];
 
 const AdminDashboardPage = () => {
@@ -801,6 +803,7 @@ const AdminDashboardPage = () => {
                   {activeSection === "dashboard" && "Dashboard"}
                   {activeSection === "bookings" && "Bookings"}
                   {activeSection === "tickets" && "Tickets"}
+                  {activeSection === "resources" && "Resources"}
                 </h1>
               </div>
 
@@ -836,6 +839,7 @@ const AdminDashboardPage = () => {
             {activeSection === "dashboard" && renderDashboard()}
             {activeSection === "bookings" && renderBookings()}
             {activeSection === "tickets" && renderTickets()}
+            {activeSection === "resources" && <AdminResource />}
           </main>
         </div>
       </div>
