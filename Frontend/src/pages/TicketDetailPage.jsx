@@ -133,6 +133,7 @@ const TicketDetailPage = () => {
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 330px",gap:"20px",alignItems:"start"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 330px",gap:"20px",alignItems:"start"}}>
           <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
             <div style={glassCard}>
               <div style={cardHead}>
@@ -263,6 +264,9 @@ const TicketDetailPage = () => {
                     onBlur={e => e.target.style.borderColor="#d4dde5"}
                     style={textareaStyle}
                   />
+                    onBlur={e => e.target.style.borderColor="#d4dde5"}
+                    style={textareaStyle}
+                  />
 
                   {statusForm.status === "REJECTED" && (
                     <textarea
@@ -288,11 +292,19 @@ const TicketDetailPage = () => {
                       padding:"11px 0",
                       borderRadius:"14px",
                       border:"none",
+                    style={{
+                      fontFamily:"'Baloo 2',sans-serif",
+                      fontSize:"13.5px",
+                      fontWeight:700,
+                      padding:"11px 0",
+                      borderRadius:"14px",
+                      border:"none",
                       width:"100%",
                       background: (!statusForm.status||updatingStatus) ? "rgba(23,48,66,.12)" : "linear-gradient(135deg,#f05d72,#ea5160)",
                       color: (!statusForm.status||updatingStatus) ? "#b0bec8" : "#fff",
                       cursor: (!statusForm.status||updatingStatus) ? "not-allowed" : "pointer",
                       boxShadow:"0 4px 16px rgba(240,93,114,.2)",
+                      transition:"all .2s",
                       transition:"all .2s",
                     }}
                   >

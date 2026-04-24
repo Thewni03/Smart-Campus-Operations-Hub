@@ -24,6 +24,11 @@
       "name": "app.admin.password",
       "type": "java.lang.String",
       "description": "Password used for the seeded admin account."
+    },
+    {
+      "name": "app.google.client-id",
+      "type": "java.lang.String",
+      "description": "Google OAuth client ID used to verify Google sign-in tokens."
     }
   ]
 }

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../api/authApi";
+import { loginUser, loginWithGoogle } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const googleButtonRef = useRef(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,6 +14,22 @@ const LoginPage = () => {
   });
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const finishLogin = (authUser) => {
+    login(
+      {
+        userId: authUser.userId,
+        name: authUser.fullName,
+        email: authUser.email,
+        role: authUser.role,
+      },
+      "session-active"
+    );
+
+    navigate(authUser.role === "ADMIN" ? "/admin" : "/home");
+  };
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -37,19 +54,7 @@ const LoginPage = () => {
       password: formData.password,
     })
       .then((response) => {
-        const authUser = response.data.data;
-
-        login(
-          {
-            userId: authUser.userId,
-            name: authUser.fullName,
-            email: authUser.email,
-            role: authUser.role,
-          },
-          "session-active"
-        );
-
-        navigate(authUser.role === "ADMIN" ? "/admin" : "/home");
+        finishLogin(response.data.data);
       })
       .catch((error) => {
         setMessage(
@@ -60,6 +65,76 @@ const LoginPage = () => {
         setSubmitting(false);
       });
   };
+
+  useEffect(() => {
+    if (!googleClientId || !googleButtonRef.current) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const renderGoogleButton = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) {
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+          if (!response.credential) {
+            setMessage("Google sign-in did not return a valid credential.");
+            return;
+          }
+
+          setGoogleSubmitting(true);
+          setMessage("");
+
+          try {
+            const apiResponse = await loginWithGoogle(response.credential);
+            finishLogin(apiResponse.data.data);
+          } catch (error) {
+            setMessage(
+              error.response?.data?.message || "Google login failed. Please try again."
+            );
+          } finally {
+            setGoogleSubmitting(false);
+          }
+        },
+      });
+
+      googleButtonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        text: "continue_with",
+        width: 372,
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    script.onerror = () => {
+      setMessage("Google sign-in could not be loaded. Please try again.");
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      cancelled = true;
+      script.onload = null;
+      script.onerror = null;
+    };
+  }, [googleClientId]);
 
   return (
     <section
@@ -179,7 +254,7 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || googleSubmitting}
               style={{
                 border: 'none',
                 borderRadius: '16px',
@@ -195,6 +270,37 @@ const LoginPage = () => {
               {submitting ? "Logging in..." : "Log In"}
             </button>
           </form>
+
+          <div style={{ marginTop: '20px', display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#7a8793' }}>
+              <span style={{ flex: 1, height: '1px', background: 'rgba(19, 40, 58, 0.12)' }} />
+              <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>or continue with</span>
+              <span style={{ flex: 1, height: '1px', background: 'rgba(19, 40, 58, 0.12)' }} />
+            </div>
+
+            {googleClientId ? (
+              <div style={{
+                minHeight: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: googleSubmitting ? 0.7 : 1,
+              }}>
+                <div ref={googleButtonRef} />
+              </div>
+            ) : (
+              <p style={{
+                margin: 0,
+                padding: '12px 14px',
+                borderRadius: '14px',
+                background: '#fff6ea',
+                color: '#8a5412',
+                textAlign: 'left',
+              }}>
+                Google sign-in is not configured yet.
+              </p>
+            )}
+          </div>
 
           {message && <p style={{ margin: '18px 0 0', padding: '12px 14px', borderRadius: '14px', background: '#eef7f1', color: '#205236', textAlign: 'left' }}>{message}</p>}
 
