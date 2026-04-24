@@ -1,6 +1,8 @@
 package com.SmartCampus.SmartCampus.Util;
 
+import com.SmartCampus.SmartCampus.Security.CurrentUserPrincipal;
 import com.SmartCampus.SmartCampus.Exception.UnauthorizedActionException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,39 +21,42 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityUtil {
 
+    public CurrentUserPrincipal getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            throw new UnauthorizedActionException("User is not authenticated");
+        }
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof CurrentUserPrincipal currentUserPrincipal) {
+            return currentUserPrincipal;
+        }
+
+        throw new UnauthorizedActionException("User context is missing required identity information");
+    }
+
     /**
      * Returns the currently authenticated user's ID.
      * Throws UnauthorizedActionException if not authenticated.
      */
     public String getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new UnauthorizedActionException("User is not authenticated");
-        }
-
-        // Swap this stub for a JwtUserDetails cast after JWT integration is added.
-        // JwtUserDetails user = (JwtUserDetails) auth.getPrincipal();
-        // return user.getId();
-
-        // Stub: returns the username (email) as ID until JWT integration
-        return auth.getName();
+        return getCurrentUser().id();
     }
 
     /**
      * Returns the role of the currently authenticated user.
      */
     public String getCurrentUserRole() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return "ROLE_" + getCurrentUser().role();
+    }
 
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new UnauthorizedActionException("User is not authenticated");
-        }
+    public String getCurrentUserName() {
+        return getCurrentUser().name();
+    }
 
-        return auth.getAuthorities().stream()
-                .findFirst()
-                .map(Object::toString)
-                .orElse("ROLE_STUDENT");
+    public String getCurrentUserEmail() {
+        return getCurrentUser().email();
     }
 
     /**
@@ -67,6 +72,10 @@ public class SecurityUtil {
     public boolean isTechnician() {
         String role = getCurrentUserRole();
         return role.contains("TECHNICIAN") || role.contains("ADMIN");
+    }
+
+    public boolean isTechnicianOnly() {
+        return getCurrentUserRole().contains("TECHNICIAN") && !isAdmin();
     }
 
     /**

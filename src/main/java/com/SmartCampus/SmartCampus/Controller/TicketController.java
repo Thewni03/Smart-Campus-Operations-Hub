@@ -66,16 +66,6 @@ public class TicketController {
         return ResponseEntity.ok(ApiResponse.success("Ticket status updated", ticket));
     }
 
-    @PatchMapping("/{id}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<TicketResponse>> assignTechnician(
-            @PathVariable String id,
-            @RequestParam String technicianId) {
-
-        TicketResponse ticket = ticketService.assignTechnician(id, technicianId);
-        return ResponseEntity.ok(ApiResponse.success("Technician assigned successfully", ticket));
-    }
-
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteTicket(@PathVariable String id) {

@@ -10,11 +10,19 @@ import java.time.LocalDateTime;
 public record TicketSummaryResponse(
         String id,
         String title,
+        String location,
+        String resourceName,
+        String description,
+        String resolutionNotes,
         Category category,
         Priority priority,
         TicketStatus status,
         String reportedBy,
+        String createdBy,
+        String createdByName,
         String assignedTo,
+        String assignedTechnicianId,
+        String assignedTechnicianName,
         int attachmentCount,
         LocalDateTime createdAt
 ) {}

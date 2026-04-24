@@ -8,10 +8,10 @@ const matchesCurrentUser = (ticket, user) => {
   if (!user) return false;
 
   return (
-    ticket.reportedBy === user.email ||
     ticket.reportedBy === user.userId ||
-    ticket.assignedTo === user.email ||
-    ticket.assignedTo === user.userId
+    ticket.createdBy === user.userId ||
+    ticket.assignedTo === user.userId ||
+    ticket.assignedTechnicianId === user.userId
   );
 };
 

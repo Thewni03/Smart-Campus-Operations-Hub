@@ -16,6 +16,7 @@ public interface TicketRepository extends MongoRepository<Ticket, String> {
 
     // Find all tickets assigned to a specific technician
     List<Ticket> findByAssignedTo(String technicianId);
+    List<Ticket> findByAssignedTechnicianId(String technicianId);
 
     // Filter by status
     List<Ticket> findByStatus(TicketStatus status);

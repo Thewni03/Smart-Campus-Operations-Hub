@@ -29,10 +29,11 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = () => user?.role === "ADMIN";
   const isTechnician = () =>
     user?.role === "TECHNICIAN" || user?.role === "ADMIN";
+  const isTechnicianOnly = () => user?.role === "TECHNICIAN";
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isAdmin, isTechnician }}
+      value={{ user, token, login, logout, isAdmin, isTechnician, isTechnicianOnly }}
     >
       {children}
     </AuthContext.Provider>

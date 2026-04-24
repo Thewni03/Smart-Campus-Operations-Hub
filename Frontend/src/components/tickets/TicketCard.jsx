@@ -64,8 +64,8 @@ const TicketCard = ({ ticket }) => {
         <div style={{ padding: "12px 14px", borderRadius: "18px", background: "rgba(244,241,234,.7)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", fontSize: ".8rem" }}>
             <span style={{ color: "#7a8f9e" }}>Assigned</span>
-            <strong style={{ color: ticket.assignedTo ? "#173042" : "#d47a0c" }}>
-              {ticket.assignedTo || "Unassigned"}
+            <strong style={{ color: (ticket.assignedTechnicianId || ticket.assignedTo) ? "#173042" : "#d47a0c" }}>
+              {ticket.assignedTechnicianName || ticket.assignedTechnicianId || ticket.assignedTo || "Unassigned"}
             </strong>
           </div>
         </div>

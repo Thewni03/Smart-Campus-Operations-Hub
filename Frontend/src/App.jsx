@@ -11,6 +11,7 @@ import TicketDetailPage from "./pages/TicketDetailPage";
 import CreateTicketPage from "./pages/CreateTicketPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import UserDashboardPage from "./pages/UserDashboardPage";
+import TechnicianDashboardPage from "./pages/TechnicianDashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import UserResource from "./components/UserResource/UserResource";
@@ -23,7 +24,11 @@ const MainLayout = ({ children }) => (
   </>
 );
 
-const getDefaultRoute = (user) => (user?.role === "ADMIN" ? "/admin" : "/home");
+const getDefaultRoute = (user) => {
+  if (user?.role === "ADMIN") return "/admin";
+  if (user?.role === "TECHNICIAN") return "/technician/dashboard";
+  return "/home";
+};
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -36,14 +41,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const UserRoute = ({ children }) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTechnicianOnly } = useAuth();
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (isAdmin()) {
-    return <Navigate to="/admin" replace />;
+  if (isAdmin() || isTechnicianOnly()) {
+    return <Navigate to={getDefaultRoute(user)} replace />;
   }
 
   return <MainLayout>{children}</MainLayout>;
@@ -61,6 +66,24 @@ const AdminRoute = ({ children }) => {
   }
 
   return children;
+};
+
+const TechnicianRoute = ({ children }) => {
+  const { user, isAdmin, isTechnicianOnly } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isAdmin()) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (!isTechnicianOnly()) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <MainLayout>{children}</MainLayout>;
 };
 
 const PublicOnlyRoute = ({ children }) => {
@@ -139,6 +162,14 @@ function App() {
               <ProtectedRoute>
                 <TicketDetailPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/technician/dashboard"
+            element={
+              <TechnicianRoute>
+                <TechnicianDashboardPage />
+              </TechnicianRoute>
             }
           />
           <Route

@@ -29,7 +29,15 @@ const TicketDetailPage = () => {
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
   if (!ticket) return null;
 
-  const canUpdate = isAdmin() || (isTechnician() && ticket.assignedTo === user?.id);
+  const assignedTechnicianId = ticket.assignedTechnicianId || ticket.assignedTo;
+  const canUpdate = isAdmin() || (isTechnician() && assignedTechnicianId === user?.userId);
+  const availableStatuses = isAdmin()
+    ? Object.values(TICKET_STATUS).filter((status) => status !== ticket.status)
+    : ticket.status === "OPEN"
+      ? ["IN_PROGRESS"]
+      : ticket.status === "IN_PROGRESS"
+        ? ["RESOLVED"]
+        : [];
 
   const handleStatusUpdate = async () => {
     if (!statusForm.status) return;
@@ -133,7 +141,6 @@ const TicketDetailPage = () => {
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 330px",gap:"20px",alignItems:"start"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 330px",gap:"20px",alignItems:"start"}}>
           <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
             <div style={glassCard}>
               <div style={cardHead}>
@@ -219,7 +226,7 @@ const TicketDetailPage = () => {
                   { k:"Category", v: ticket.category },
                   { k:"Location", v: ticket.location || "—" },
                   { k:"Reported by", v: ticket.reportedBy },
-                  { k:"Assigned to", v: ticket.assignedTo || "—", warn: !ticket.assignedTo },
+                  { k:"Assigned to", v: ticket.assignedTechnicianName || ticket.assignedTechnicianId || ticket.assignedTo || "—", warn: !assignedTechnicianId },
                   { k:"Contact", v: ticket.contactDetails || "—" },
                   { k:"Created", v: formatDateTime(ticket.createdAt) },
                   { k:"Updated", v: formatDateTime(ticket.updatedAt) },
@@ -248,8 +255,7 @@ const TicketDetailPage = () => {
                     style={selectStyle}
                   >
                     <option value="">Move to…</option>
-                    {Object.values(TICKET_STATUS)
-                      .filter(s => s !== ticket.status)
+                    {availableStatuses
                       .map(s => (
                         <option key={s} value={s}>{s.replace("_"," ")}</option>
                       ))}
@@ -261,9 +267,6 @@ const TicketDetailPage = () => {
                     onChange={e => setStatusForm(p=>({...p,resolutionNotes:e.target.value}))}
                     placeholder="Resolution notes…"
                     onFocus={e => e.target.style.borderColor="#ec6272"}
-                    onBlur={e => e.target.style.borderColor="#d4dde5"}
-                    style={textareaStyle}
-                  />
                     onBlur={e => e.target.style.borderColor="#d4dde5"}
                     style={textareaStyle}
                   />
@@ -292,19 +295,11 @@ const TicketDetailPage = () => {
                       padding:"11px 0",
                       borderRadius:"14px",
                       border:"none",
-                    style={{
-                      fontFamily:"'Baloo 2',sans-serif",
-                      fontSize:"13.5px",
-                      fontWeight:700,
-                      padding:"11px 0",
-                      borderRadius:"14px",
-                      border:"none",
                       width:"100%",
                       background: (!statusForm.status||updatingStatus) ? "rgba(23,48,66,.12)" : "linear-gradient(135deg,#f05d72,#ea5160)",
                       color: (!statusForm.status||updatingStatus) ? "#b0bec8" : "#fff",
                       cursor: (!statusForm.status||updatingStatus) ? "not-allowed" : "pointer",
                       boxShadow:"0 4px 16px rgba(240,93,114,.2)",
-                      transition:"all .2s",
                       transition:"all .2s",
                     }}
                   >

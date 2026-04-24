@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface UserAccountRepository extends MongoRepository<UserAccount, String> {
@@ -14,4 +15,6 @@ public interface UserAccountRepository extends MongoRepository<UserAccount, Stri
 
     // Used during signup to prevent duplicate accounts.
     boolean existsByEmail(String email);
+
+    List<UserAccount> findByRoleIgnoreCase(String role);
 }

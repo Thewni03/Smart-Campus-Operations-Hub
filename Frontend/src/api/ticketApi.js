@@ -20,10 +20,22 @@ export const createTicket = (data) =>
 export const updateTicketStatus = (id, data) =>
   axiosInstance.patch(`/tickets/${id}/status`, data);
 
+export const getTechnicianTickets = () =>
+  axiosInstance.get("/technician/tickets/my");
+
+export const updateTechnicianTicketStatus = (ticketId, data) =>
+  axiosInstance.patch(`/technician/tickets/${ticketId}/status`, data);
+
+export const updateTechnicianResolution = (ticketId, data) =>
+  axiosInstance.patch(`/technician/tickets/${ticketId}/resolution`, data);
+
+export const getTechnicians = () =>
+  axiosInstance.get("/admin/technicians");
+
 // PATCH assign technician
 export const assignTechnician = (ticketId, technicianId) =>
-  axiosInstance.patch(`/tickets/${ticketId}/assign`, null, {
-    params: { technicianId },
+  axiosInstance.patch(`/admin/tickets/${ticketId}/assign`, {
+    technicianId,
   });
 
 // DELETE ticket (admin only)

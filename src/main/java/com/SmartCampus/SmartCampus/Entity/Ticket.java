@@ -22,22 +22,27 @@ public class Ticket {
     @Id
     private String id;
 
-    private String reportedBy;       // User ID from auth service (Member 4)
-    private String assignedTo;       // Technician User ID (nullable)
-    private String resourceId;       // Resource ID from Member 1 (nullable)
+    private String reportedBy;       // legacy alias for createdBy
+    private String assignedTo;       // legacy alias for assignedTechnicianId
+    private String resourceId;
+    private String resourceName;
+    private String createdBy;
+    private String createdByName;
+    private String assignedTechnicianId;
+    private String assignedTechnicianName;
 
     private String title;
     private String description;
-    private String location;         // freetext fallback if no resourceId
+    private String location;
 
     private Category category;
     private Priority priority;
     private TicketStatus status;
 
-    private String contactDetails;   // nullable
+    private String contactDetails;
 
-    private String rejectionReason;  // nullable — set when REJECTED
-    private String resolutionNotes;  // nullable — set when RESOLVED/CLOSED
+    private String rejectionReason;
+    private String resolutionNotes;
 
     @Builder.Default
     private List<String> attachmentIds = new ArrayList<>();  // max 3

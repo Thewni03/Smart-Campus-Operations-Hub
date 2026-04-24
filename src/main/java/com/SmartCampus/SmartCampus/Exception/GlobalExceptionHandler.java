@@ -23,6 +23,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotificationNotFound(NotificationNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     // 403 — Unauthorized action (e.g. editing someone else's comment)
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<ApiResponse<Void>> handleUnauthorized(UnauthorizedActionException ex) {
@@ -81,6 +88,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAuth(AuthException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, InvalidStatusTransitionException.class})
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(RuntimeException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 

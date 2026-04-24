@@ -1,17 +1,11 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import useTickets from "../hooks/useTickets";
-import { assignTechnician, deleteTicket, updateTicketStatus } from "../api/ticketApi";
+import { assignTechnician, deleteTicket, getTechnicians, updateTicketStatus } from "../api/ticketApi";
 import { StatusBadge, PriorityBadge } from "../components/tickets/TicketStatusBadge";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import AdminResource from "../components/Adminresource/Adminresource";
-
-const TECHNICIANS = [
-  { id: "tech-001", name: "Kavindu Perera" },
-  { id: "tech-002", name: "Tharuka Fernando" },
-  { id: "tech-003", name: "Nilantha Jayasena" },
-];
 
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "◫" },
@@ -22,9 +16,11 @@ const SIDEBAR_ITEMS = [
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const { tickets, loading, refetch } = useTickets();
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [technicians, setTechnicians] = useState([]);
   const [selectedTech, setSelectedTech] = useState({});
   const [assigning, setAssigning] = useState({});
   const [deleting, setDeleting] = useState({});
@@ -73,6 +69,28 @@ const AdminDashboardPage = () => {
   ];
 
   const maxStatusValue = Math.max(...statusDistribution.map((item) => item.value), 1);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const requestedSection = searchParams.get("section");
+
+    if (requestedSection && SIDEBAR_ITEMS.some((item) => item.id === requestedSection)) {
+      setActiveSection(requestedSection);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const fetchTechnicianOptions = async () => {
+      try {
+        const response = await getTechnicians();
+        setTechnicians(response.data.data || []);
+      } catch {
+        setTechnicians([]);
+      }
+    };
+
+    fetchTechnicianOptions();
+  }, []);
 
   const handleAssign = async (ticketId) => {
     const technicianId = selectedTech[ticketId];
@@ -573,9 +591,9 @@ const AdminDashboardPage = () => {
                     }}
                   >
                     <option value="">Select technician</option>
-                    {TECHNICIANS.map((technician) => (
+                    {technicians.map((technician) => (
                       <option key={technician.id} value={technician.id}>
-                        {technician.name}
+                        {technician.fullName}
                       </option>
                     ))}
                   </select>

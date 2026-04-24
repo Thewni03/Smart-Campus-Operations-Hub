@@ -3,6 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser, loginWithGoogle } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 
+const getDefaultRoute = (role) => {
+  if (role === "ADMIN") return "/admin";
+  if (role === "TECHNICIAN") return "/technician/dashboard";
+  return "/home";
+};
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -28,7 +34,7 @@ const LoginPage = () => {
       "session-active"
     );
 
-    navigate(authUser.role === "ADMIN" ? "/admin" : "/home");
+    navigate(getDefaultRoute(authUser.role));
   };
 
   const handleChange = (event) => {

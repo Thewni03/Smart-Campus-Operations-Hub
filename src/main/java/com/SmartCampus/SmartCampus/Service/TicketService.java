@@ -2,8 +2,10 @@ package com.SmartCampus.SmartCampus.Service;
 
 import com.SmartCampus.SmartCampus.Dto.Request.CreateTicketRequest;
 import com.SmartCampus.SmartCampus.Dto.Request.UpdateTicketStatusRequest;
+import com.SmartCampus.SmartCampus.Dto.Request.UpdateResolutionRequest;
 import com.SmartCampus.SmartCampus.Dto.Response.TicketResponse;
 import com.SmartCampus.SmartCampus.Dto.Response.TicketSummaryResponse;
+import com.SmartCampus.SmartCampus.Dto.Response.TechnicianOptionResponse;
 import com.SmartCampus.SmartCampus.Entity.enums.Priority;
 import com.SmartCampus.SmartCampus.Entity.enums.TicketStatus;
 
@@ -23,6 +25,9 @@ public interface TicketService {
     // Get only tickets reported by the current user
     List<TicketSummaryResponse> getMyTickets();
 
+    // Technician: only assigned tickets
+    List<TicketResponse> getMyAssignedTechnicianTickets();
+
     // Admin: get all tickets with optional filters
     List<TicketSummaryResponse> getAllTicketsFiltered(TicketStatus status, Priority priority);
     // Admin / Technician: update status, add resolution notes, assign technician
@@ -30,6 +35,12 @@ public interface TicketService {
 
     // Admin: assign a technician to a ticket
     TicketResponse assignTechnician(String ticketId, String technicianId);
+
+    TicketResponse updateTechnicianTicketStatus(String ticketId, UpdateTicketStatusRequest request);
+
+    TicketResponse updateTechnicianResolution(String ticketId, UpdateResolutionRequest request);
+
+    List<TechnicianOptionResponse> getTechnicians();
 
     // Delete ticket — admin only
     void deleteTicket(String id);
