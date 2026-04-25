@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../api/axiosInstance';
+import { useAuth } from '../../context/AuthContext';
 
 export default function BookingForm() {
+  const { user } = useAuth();
+  const actualUserId = user?.userId || 'user123';
+
   const [formData, setFormData] = useState({
     resourceId: '',
-    userId: 'user123', // Admin/Sys will track real ID later
     bookingDate: '',
     startTime: '',
     endTime: '',
@@ -13,6 +16,27 @@ export default function BookingForm() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  
+  // State for user's past bookings
+  const [myBookings, setMyBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+
+  const fetchMyBookings = async () => {
+    try {
+      const res = await axiosInstance.get(`/bookings?userId=${actualUserId}`);
+      if (res.data.success) {
+        setMyBookings(res.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching my bookings:', error);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyBookings();
+  }, [actualUserId]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,14 +50,16 @@ export default function BookingForm() {
     // Convert expectedAttendees string to actual number before sending
     const payload = {
         ...formData,
+        userId: actualUserId,
         expectedAttendees: formData.expectedAttendees ? parseInt(formData.expectedAttendees, 10) : null
     };
     
     try {
-      const response = await axios.post('/api/bookings', payload);
+      const response = await axiosInstance.post('/bookings', payload);
       if (response.data.success) {
         setMessage('success: ' + response.data.message);
         setFormData({ ...formData, resourceId: '', bookingDate: '', startTime: '', endTime: '', expectedAttendees: '', purpose: '' });
+        fetchMyBookings(); // Refresh the list instantly
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to create booking';
@@ -43,75 +69,87 @@ export default function BookingForm() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white/60 backdrop-blur-xl p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-extrabold text-slate-800 tracking-tight">
-            Reserve a Resource
-          </h2>
-          <p className="mt-3 text-center text-sm text-slate-500">
-            Smart Campus Operations Hub
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-5 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="resourceId" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Resource ID</label>
-              <input
-                id="resourceId"
-                name="resourceId"
-                type="text"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
-                placeholder="e.g. ROOM-101"
-                value={formData.resourceId}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Booking Date</label>
-              <input
-                id="bookingDate"
-                name="bookingDate"
-                type="date"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
-                value={formData.bookingDate}
-                onChange={handleChange}
-              />
-            </div>
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'PENDING': return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'APPROVED': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'REJECTED': return 'bg-rose-100 text-rose-800 border-rose-200';
+      case 'CANCELLED': return 'bg-slate-100 text-slate-800 border-slate-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
-            <div className="grid grid-cols-2 gap-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Column: Form */}
+        <div className="lg:col-span-5 space-y-8 bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
+          <div>
+            <h2 className="mt-2 text-3xl font-extrabold text-slate-800 tracking-tight">
+              Reserve a Resource
+            </h2>
+            <p className="mt-3 text-sm text-slate-500">
+              Submit a new booking request for your project.
+            </p>
+          </div>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-5 rounded-md shadow-sm">
               <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Start Time</label>
+                <label htmlFor="resourceId" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Resource ID</label>
                 <input
-                  id="startTime"
-                  name="startTime"
-                  type="time"
+                  id="resourceId"
+                  name="resourceId"
+                  type="text"
                   required
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
-                  value={formData.startTime}
+                  placeholder="e.g. ROOM-101"
+                  value={formData.resourceId}
                   onChange={handleChange}
                 />
               </div>
+              
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-slate-700 ml-1 mb-1">End Time</label>
+                <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Booking Date</label>
                 <input
-                  id="endTime"
-                  name="endTime"
-                  type="time"
+                  id="bookingDate"
+                  name="bookingDate"
+                  type="date"
                   required
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
-                  value={formData.endTime}
+                  value={formData.bookingDate}
                   onChange={handleChange}
                 />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="startTime" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Start Time</label>
+                  <input
+                    id="startTime"
+                    name="startTime"
+                    type="time"
+                    required
+                    className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
+                    value={formData.startTime}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="endTime" className="block text-sm font-medium text-slate-700 ml-1 mb-1">End Time</label>
+                  <input
+                    id="endTime"
+                    name="endTime"
+                    type="time"
+                    required
+                    className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
+                    value={formData.endTime}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              
+              <div>
                 <label htmlFor="expectedAttendees" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Expected Attendees</label>
                 <input
                   id="expectedAttendees"
@@ -124,43 +162,101 @@ export default function BookingForm() {
                   onChange={handleChange}
                 />
               </div>
+
+              <div>
+                <label htmlFor="purpose" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Purpose of Booking</label>
+                <textarea
+                  id="purpose"
+                  name="purpose"
+                  required
+                  rows="3"
+                  className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200 resize-none"
+                  placeholder="e.g. Group meeting for PAF Assignment"
+                  value={formData.purpose}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
             </div>
+
+            {message && (
+              <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.startsWith('success') ? 'bg-teal-50 text-teal-700 border border-teal-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                <span className="relative flex h-3 w-3">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${message.startsWith('success') ? 'bg-teal-400' : 'bg-rose-400'}`}></span>
+                  <span className={`relative inline-flex rounded-full h-3 w-3 ${message.startsWith('success') ? 'bg-teal-500' : 'bg-rose-500'}`}></span>
+                </span>
+                {message.replace('success: ', '').replace('error: ', '')}
+              </div>
+            )}
 
             <div>
-              <label htmlFor="purpose" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Purpose of Booking</label>
-              <textarea
-                id="purpose"
-                name="purpose"
-                required
-                rows="3"
-                className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200 resize-none"
-                placeholder="e.g. Group meeting for PAF Assignment"
-                value={formData.purpose}
-                onChange={handleChange}
-              ></textarea>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md transform transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Processing...' : 'Submit Booking Request'}
+              </button>
             </div>
-          </div>
+          </form>
+        </div>
 
-          {message && (
-            <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.startsWith('success') ? 'bg-teal-50 text-teal-700 border border-teal-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
-              <span className="relative flex h-3 w-3">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${message.startsWith('success') ? 'bg-teal-400' : 'bg-rose-400'}`}></span>
-                <span className={`relative inline-flex rounded-full h-3 w-3 ${message.startsWith('success') ? 'bg-teal-500' : 'bg-rose-500'}`}></span>
-              </span>
-              {message.replace('success: ', '').replace('error: ', '')}
-            </div>
-          )}
-
+        {/* Right Column: User's Bookings List */}
+        <div className="lg:col-span-7 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col h-[800px]">
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md transform transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Processing...' : 'Submit Booking Request'}
-            </button>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+              My Recent Bookings
+            </h2>
+            <p className="mt-2 text-sm text-slate-500 mb-6">
+              Track the approval progress of your requests here.
+            </p>
           </div>
-        </form>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+            {loadingBookings ? (
+               <div className="flex justify-center py-10">
+                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+               </div>
+            ) : myBookings.length === 0 ? (
+               <div className="text-center py-12 px-4 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
+                 <div className="text-4xl mb-3">📅</div>
+                 <h3 className="text-sm font-medium text-slate-900">No bookings yet</h3>
+                 <p className="mt-1 text-xs text-slate-500">Fill out the form on the left to request a resource.</p>
+               </div>
+            ) : (
+               myBookings.map((booking) => (
+                 <div key={booking.id} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
+                    <div className="flex justify-between items-start mb-3">
+                       <div>
+                          <h3 className="text-lg font-bold text-slate-800">{booking.resourceId}</h3>
+                          <div className="text-xs text-slate-500 mt-1">{booking.purpose}</div>
+                       </div>
+                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(booking.status)}`}>
+                         {booking.status}
+                       </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-50">
+                       <div>
+                         <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</div>
+                         <div className="text-sm font-medium text-slate-700">{booking.bookingDate || 'N/A'}</div>
+                       </div>
+                       <div>
+                         <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Time</div>
+                         <div className="text-sm font-medium text-slate-700">{booking.startTime || '?'} - {booking.endTime || '?'}</div>
+                       </div>
+                    </div>
+
+                    {booking.rejectionReason && (
+                       <div className="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-700">
+                          <strong>Rejection Reason:</strong> {booking.rejectionReason}
+                       </div>
+                    )}
+                 </div>
+               ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

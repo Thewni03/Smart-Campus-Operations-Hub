@@ -755,7 +755,13 @@ const AdminDashboardPage = () => {
               {SIDEBAR_ITEMS.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => {
+                    if (item.id === "bookings") {
+                      navigate("/admin-bookings");
+                    } else {
+                      setActiveSection(item.id);
+                    }
+                  }}
                   style={sidebarLink(activeSection === item.id)}
                 >
                   <span

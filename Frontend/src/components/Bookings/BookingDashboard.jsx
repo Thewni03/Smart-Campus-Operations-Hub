@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 export default function BookingDashboard() {
   const [bookings, setBookings] = useState([]);
@@ -10,7 +10,7 @@ export default function BookingDashboard() {
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get('/api/bookings');
+      const res = await axiosInstance.get('/bookings');
       if (res.data.success) {
         setBookings(res.data.data);
       }
@@ -27,12 +27,12 @@ export default function BookingDashboard() {
 
   const updateStatus = async (id, newStatus, reason = null) => {
     try {
-      let queryUrl = `/api/bookings/${id}/status?status=${newStatus}&reviewedBy=${ADMIN_ID}`;
+      let queryUrl = `/bookings/${id}/status?status=${newStatus}&reviewedBy=${ADMIN_ID}`;
       if (reason) {
         queryUrl += `&rejectionReason=${encodeURIComponent(reason)}`;
       }
       
-      const res = await axios.put(queryUrl);
+      const res = await axiosInstance.put(queryUrl);
       if (res.data.success) {
         fetchBookings();
       }
@@ -55,7 +55,7 @@ export default function BookingDashboard() {
   const deleteBooking = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pending booking?")) return;
     try {
-      const res = await axios.delete(`/api/bookings/${id}`);
+      const res = await axiosInstance.delete(`/bookings/${id}`);
       if (res.data.success) {
         fetchBookings();
       }
@@ -140,7 +140,7 @@ export default function BookingDashboard() {
                             )}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                              <div>{booking.userId}</div>
+                              <div>{booking.userName || booking.userId}</div>
                               <div className="text-slate-400 text-xs mt-0.5">Attendees: {booking.expectedAttendees || 'N/A'}</div>
                            </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
