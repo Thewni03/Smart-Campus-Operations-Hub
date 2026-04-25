@@ -18,6 +18,7 @@ import UserResource from "./components/UserResource/UserResource";
 import AdminResource from "./components/Adminresource/Adminresource";
 import BookingForm from "./components/Bookings/BookingForm";
 import BookingDashboard from "./components/Bookings/BookingDashboard";
+import MyBookingsPage from "./pages/MyBookingsPage";
 
 const MainLayout = ({ children }) => (
   <>
@@ -203,6 +204,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BookingForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute>
+                <MyBookingsPage />
               </ProtectedRoute>
             }
           />
