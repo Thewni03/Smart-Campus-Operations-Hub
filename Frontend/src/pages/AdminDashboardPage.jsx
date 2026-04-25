@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useTickets from "../hooks/useTickets";
 import { assignTechnician, deleteTicket, getTechnicians, updateTicketStatus } from "../api/ticketApi";
+import { getStudents, getTechnicianUsers, deleteUser } from "../api/userApi";
 import { StatusBadge, PriorityBadge } from "../components/tickets/TicketStatusBadge";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +13,7 @@ const SIDEBAR_ITEMS = [
   { id: "bookings", label: "Bookings", icon: "◧" },
   { id: "tickets", label: "Tickets", icon: "◎" },
   { id: "resources", label: "Resources", icon: "❒" },
+  { id: "users", label: "Users", icon: "◉" },
 ];
 
 const AdminDashboardPage = () => {
@@ -26,6 +28,13 @@ const AdminDashboardPage = () => {
   const [deleting, setDeleting] = useState({});
   const [rejectForm, setRejectForm] = useState({ ticketId: "", reason: "" });
   const [rejecting, setRejecting] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [technicianUsers, setTechnicianUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState({ students: "", technicians: "" });
+  const [deletingUser, setDeletingUser] = useState({});
+  const [activeUserTab, setActiveUserTab] = useState("students");
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
 
   const sortedTickets = useMemo(
     () => [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
@@ -91,6 +100,38 @@ const AdminDashboardPage = () => {
 
     fetchTechnicianOptions();
   }, []);
+
+  const refetchUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const [studentsRes, techsRes] = await Promise.all([getStudents(), getTechnicianUsers()]);
+      setStudents(studentsRes.data.data || []);
+      setTechnicianUsers(techsRes.data.data || []);
+    } catch {
+      setStudents([]);
+      setTechnicianUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSection === "users") refetchUsers();
+  }, [activeSection, usersRefreshKey, refetchUsers]);
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Delete this user account permanently?")) return;
+    setDeletingUser((prev) => ({ ...prev, [userId]: true }));
+    try {
+      await deleteUser(userId);
+      setStudents((prev) => prev.filter((u) => u.id !== userId));
+      setTechnicianUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch {
+      alert("Delete failed");
+    } finally {
+      setDeletingUser((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
 
   const handleAssign = async (ticketId) => {
     const technicianId = selectedTech[ticketId];
@@ -402,6 +443,256 @@ const AdminDashboardPage = () => {
       </div>
     </>
   );
+
+  const renderUsers = () => {
+    const isStudents = activeUserTab === "students";
+    const list = isStudents ? students : technicianUsers;
+    const searchKey = isStudents ? "students" : "technicians";
+    const query = userSearch[searchKey].toLowerCase();
+    const filtered = list.filter(
+      (u) =>
+        u.fullName?.toLowerCase().includes(query) ||
+        u.email?.toLowerCase().includes(query)
+    );
+
+    const formatDate = (iso) => {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    };
+
+    const tabBtn = (id) => ({
+      border: "none",
+      borderRadius: "999px",
+      padding: "10px 20px",
+      fontWeight: 700,
+      cursor: "pointer",
+      background:
+        activeUserTab === id
+          ? "linear-gradient(135deg, #377dff, #2358c5)"
+          : "#f0f4fb",
+      color: activeUserTab === id ? "#fff" : "#5f6f8c",
+      fontSize: "0.88rem",
+    });
+
+    return (
+      <>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: "18px",
+            marginBottom: "18px",
+          }}
+        >
+          <article style={{ ...panel, padding: "20px 22px", background: "linear-gradient(180deg,#fff,#f8fbff)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#8a98b1", textTransform: "uppercase", letterSpacing: ".08em" }}>
+              Total Students
+            </div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, color: "#1e2c4f", marginTop: "10px" }}>
+              {students.length}
+            </div>
+          </article>
+          <article style={{ ...panel, padding: "20px 22px", background: "linear-gradient(180deg,#fff,#f8fbff)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#8a98b1", textTransform: "uppercase", letterSpacing: ".08em" }}>
+              Total Technicians
+            </div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, color: "#1e2c4f", marginTop: "10px" }}>
+              {technicianUsers.length}
+            </div>
+          </article>
+          <article style={{ ...panel, padding: "20px 22px", background: "linear-gradient(180deg,#fff,#f8fbff)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#8a98b1", textTransform: "uppercase", letterSpacing: ".08em" }}>
+              Total Users
+            </div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, color: "#1e2c4f", marginTop: "10px" }}>
+              {students.length + technicianUsers.length}
+            </div>
+          </article>
+        </div>
+
+        <section style={{ ...panel, overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "18px 22px",
+              borderBottom: "1px solid #edf2fb",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={tabBtn("students")} onClick={() => setActiveUserTab("students")}>
+                Students ({students.length})
+              </button>
+              <button style={tabBtn("technicians")} onClick={() => setActiveUserTab("technicians")}>
+                Technicians ({technicianUsers.length})
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <input
+                type="text"
+                placeholder={`Search ${isStudents ? "students" : "technicians"}…`}
+                value={userSearch[searchKey]}
+                onChange={(e) =>
+                  setUserSearch((prev) => ({ ...prev, [searchKey]: e.target.value }))
+                }
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "999px",
+                  border: "1px solid #d6e0f0",
+                  background: "#f8fbff",
+                  color: "#1e2c4f",
+                  minWidth: "240px",
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={() => setUsersRefreshKey((k) => k + 1)}
+                disabled={usersLoading}
+                style={{
+                  border: "none",
+                  borderRadius: "999px",
+                  padding: "10px 18px",
+                  background: "linear-gradient(135deg, #377dff, #2358c5)",
+                  color: "#fff",
+                  fontWeight: 700,
+                  cursor: usersLoading ? "not-allowed" : "pointer",
+                  opacity: usersLoading ? 0.7 : 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {usersLoading ? "Loading…" : "Refresh"}
+              </button>
+            </div>
+          </div>
+
+          {usersLoading ? (
+            <div style={{ padding: "40px", textAlign: "center", color: "#8a98b1" }}>Loading…</div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#fafcff" }}>
+                    {["#", "Name", "Email", "Auth", "Joined", "Action"].map((label) => (
+                      <th
+                        key={label}
+                        style={{
+                          padding: "12px 18px",
+                          textAlign: "left",
+                          fontSize: "0.75rem",
+                          color: "#8a98b1",
+                          textTransform: "uppercase",
+                          letterSpacing: ".08em",
+                          borderBottom: "1px solid #edf2fb",
+                        }}
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#8a98b1" }}>
+                        No {isStudents ? "students" : "technicians"} found.
+                      </td>
+                    </tr>
+                  )}
+                  {filtered.map((user, idx) => (
+                    <tr key={user.id} style={{ borderBottom: "1px solid #f0f4fb" }}>
+                      <td style={{ padding: "14px 18px", color: "#8a98b1", fontSize: "0.82rem" }}>
+                        {idx + 1}
+                      </td>
+                      <td style={{ padding: "14px 18px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "50%",
+                              background: isStudents
+                                ? "linear-gradient(135deg,#377dff,#2358c5)"
+                                : "linear-gradient(135deg,#6a5cff,#4130d5)",
+                              color: "#fff",
+                              display: "grid",
+                              placeItems: "center",
+                              fontWeight: 700,
+                              fontSize: "0.9rem",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {user.fullName?.charAt(0)?.toUpperCase() || "?"}
+                          </div>
+                          <span style={{ color: "#1e2c4f", fontWeight: 700 }}>
+                            {user.fullName || "—"}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "14px 18px", color: "#5f6f8c" }}>{user.email}</td>
+                      <td style={{ padding: "14px 18px" }}>
+                        <span
+                          style={{
+                            padding: "4px 10px",
+                            borderRadius: "999px",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            background:
+                              user.oauthProvider === "GOOGLE"
+                                ? "#fff3e0"
+                                : "#edf3ff",
+                            color:
+                              user.oauthProvider === "GOOGLE"
+                                ? "#e65100"
+                                : "#2358c5",
+                          }}
+                        >
+                          {user.oauthProvider === "GOOGLE" ? "Google" : "Local"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 18px", color: "#8a98b1", fontSize: "0.85rem" }}>
+                        {formatDate(user.createdAt)}
+                      </td>
+                      <td style={{ padding: "14px 18px" }}>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={deletingUser[user.id]}
+                          style={{
+                            border: "none",
+                            borderRadius: "12px",
+                            padding: "8px 14px",
+                            background: deletingUser[user.id] ? "#f5c7cb" : "#d84f5f",
+                            color: "#fff",
+                            fontWeight: 700,
+                            cursor: deletingUser[user.id] ? "not-allowed" : "pointer",
+                            fontSize: "0.82rem",
+                          }}
+                        >
+                          {deletingUser[user.id] ? "Deleting…" : "Delete"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </>
+    );
+  };
 
   const renderBookings = () => (
     <section style={{ ...panel, padding: "28px", minHeight: "620px", display: "grid", placeItems: "center" }}>
@@ -822,6 +1113,7 @@ const AdminDashboardPage = () => {
                   {activeSection === "bookings" && "Bookings"}
                   {activeSection === "tickets" && "Tickets"}
                   {activeSection === "resources" && "Resources"}
+                  {activeSection === "users" && "User Management"}
                 </h1>
               </div>
 
@@ -838,7 +1130,10 @@ const AdminDashboardPage = () => {
                   Total records: {tickets.length}
                 </div>
                 <button
-                  onClick={refetch}
+                  onClick={() => {
+                    refetch();
+                    setUsersRefreshKey((k) => k + 1);
+                  }}
                   style={{
                     border: "none",
                     borderRadius: "999px",
@@ -858,6 +1153,7 @@ const AdminDashboardPage = () => {
             {activeSection === "bookings" && renderBookings()}
             {activeSection === "tickets" && renderTickets()}
             {activeSection === "resources" && <AdminResource />}
+            {activeSection === "users" && renderUsers()}
           </main>
         </div>
       </div>
