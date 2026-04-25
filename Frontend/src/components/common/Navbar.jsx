@@ -29,7 +29,6 @@ const Navbar = () => {
         { to: "/dashboard", label: "Dashboard" },
         { to: "/tickets", label: "Tickets" },
         { to: "/tickets/create", label: "Create Ticket" },
-        { to: "/book", label: "Bookings" },
       ];
   const brandRoute = isAdmin()
     ? "/admin"
