@@ -63,8 +63,14 @@ const Navbar = () => {
       await markOneAsRead(notification.id);
     }
     setIsPanelOpen(false);
+
     if (notification.ticketId) {
       navigate(`/tickets/${notification.ticketId}`);
+      return;
+    }
+
+    if (notification.resourceId || notification.type?.startsWith("RESOURCE_")) {
+      navigate(isAdmin() ? "/admin-resources" : "/resource");
     }
   };
 
@@ -89,6 +95,7 @@ const Navbar = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              end
               className={({ isActive }) =>
                 `topbar__link ${isActive ? "topbar__link--active" : ""}`
               }
@@ -121,7 +128,7 @@ const Navbar = () => {
               <div className="topbar__notification-header">
                 <div>
                   <strong>Activity Center</strong>
-                  <small>Your latest ticket notifications</small>
+                  <small>Your latest ticket and resource notifications</small>
                 </div>
                 <button
                   type="button"
@@ -143,7 +150,7 @@ const Navbar = () => {
                 {!loading && notifications.length === 0 && (
                   <div className="topbar__notification-empty">
                     <strong>No updates yet</strong>
-                    <p>New ticket assignments and updates will appear here.</p>
+                    <p>New ticket and resource updates will appear here.</p>
                   </div>
                 )}
 

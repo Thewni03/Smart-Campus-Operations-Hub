@@ -625,15 +625,37 @@
 
 .technician-ticket-grid {
   display: grid;
-  gap: 18px;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .technician-ticket-card {
-  padding: 24px;
+  padding: 26px;
   border: 1px solid rgba(23, 48, 66, 0.08);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 18px 34px rgba(23, 48, 66, 0.08);
+  border-left: 5px solid #d47a0c;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 32px rgba(23, 48, 66, 0.08);
+  backdrop-filter: blur(10px);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.technician-ticket-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 44px rgba(23, 48, 66, 0.12);
+}
+
+.technician-ticket-card--open {
+  border-left-color: #d47a0c;
+}
+
+.technician-ticket-card--in-progress {
+  border-left-color: #1a6fb5;
+}
+
+.technician-ticket-card--resolved {
+  border-left-color: #1a7a4a;
 }
 
 .technician-ticket-card__head {
@@ -705,13 +727,21 @@
   gap: 12px;
 }
 
-.home-page,
-.dashboard-page {
+.home-page {
   min-height: calc(100vh - 82px);
   padding: 36px 28px 56px;
   background:
     radial-gradient(circle at top left, rgba(196, 233, 223, 0.95), transparent 24%),
     linear-gradient(180deg, #d9efe7 0%, #f7faf6 28%, #ffd4d8 62%, #1a2745 62%, #14223d 100%);
+}
+
+.dashboard-page {
+  min-height: calc(100vh - 82px);
+  padding: 36px 28px 56px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 196, 112, 0.18), transparent 38%),
+    radial-gradient(circle at bottom left, rgba(196, 233, 223, 0.45), transparent 32%),
+    linear-gradient(160deg, #f7f2ea 0%, #f9f5ef 40%, #f3ede3 100%);
 }
 
 .home-hero,
@@ -1300,9 +1330,9 @@
     padding: 22px 20px;
     border-radius: 24px;
   }
+}
 
-
-  /* --- TICKET DETAIL SPECIFIC STYLES --- */
+/* --- TICKET DETAIL SPECIFIC STYLES --- */
 
 /* Section Headers (EVIDENCE PHOTOS, DISCUSSION, etc) */
 .section-eyebrow {
@@ -1425,12 +1455,6 @@
   color: white;
 }
 
-/* Background Logic for the "Dark Bottom" effect */
-.dashboard-page {
-  /* This creates the split look seen in your image */
-  background: linear-gradient(180deg, #FDF7F2 60%, #173042 60%);
-  min-height: 100vh;
-}
 /* ============================= */
 /* GLOBAL UI POLISH              */
 /* ============================= */
@@ -1678,5 +1702,4 @@ textarea {
   padding:20px;
 }
 
-}
 }

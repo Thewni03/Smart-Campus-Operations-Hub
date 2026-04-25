@@ -89,6 +89,7 @@ const TechnicianDashboardPage = () => {
 
   return (
     <section className="dashboard-page">
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
       <div className="dashboard-hero">
         <div>
           <p className="home-eyebrow">Technician Dashboard</p>
@@ -131,8 +132,14 @@ const TechnicianDashboardPage = () => {
                 const canStart = ticket.status === "OPEN";
                 const canResolve = ticket.status === "IN_PROGRESS";
 
+                const statusClass = ticket.status === "OPEN"
+                  ? "technician-ticket-card--open"
+                  : ticket.status === "IN_PROGRESS"
+                    ? "technician-ticket-card--in-progress"
+                    : "technician-ticket-card--resolved";
+
                 return (
-                  <article key={ticket.id} className="technician-ticket-card">
+                  <article key={ticket.id} className={`technician-ticket-card ${statusClass}`}>
                     <div className="technician-ticket-card__head">
                       <div>
                         <p className="technician-ticket-card__eyebrow">
@@ -209,6 +216,7 @@ const TechnicianDashboardPage = () => {
           )}
         </>
       )}
+      </div>
     </section>
   );
 };

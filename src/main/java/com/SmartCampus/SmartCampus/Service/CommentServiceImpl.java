@@ -4,9 +4,11 @@ import com.SmartCampus.SmartCampus.Dto.Request.CreateCommentRequest;
 import com.SmartCampus.SmartCampus.Dto.Request.UpdateCommentRequest;
 import com.SmartCampus.SmartCampus.Dto.Response.CommentResponse;
 import com.SmartCampus.SmartCampus.Entity.Comment;
+import com.SmartCampus.SmartCampus.Entity.UserAccount;
 import com.SmartCampus.SmartCampus.Exception.TicketNotFoundException;
 import com.SmartCampus.SmartCampus.Repository.CommentRepository;
 import com.SmartCampus.SmartCampus.Repository.TicketRepository;
+import com.SmartCampus.SmartCampus.Repository.UserAccountRepository;
 import com.SmartCampus.SmartCampus.Util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final TicketRepository ticketRepository;
+    private final UserAccountRepository userAccountRepository;
     private final SecurityUtil securityUtil;
 
     @Override
@@ -31,11 +34,14 @@ public class CommentServiceImpl implements CommentService {
 
         String currentUserId = securityUtil.getCurrentUserId();
         String currentUserRole = securityUtil.getCurrentUserRole();
+        String currentUserName = securityUtil.getCurrentUserName();
 
         Comment comment = Comment.builder()
                 .ticketId(ticketId)
                 .authorId(currentUserId)
-                .authorName(currentUserId)   // replace with name from JWT when Member 4 ready
+                .authorName((currentUserName != null && !currentUserName.isBlank())
+                        ? currentUserName.trim()
+                        : currentUserId)
                 .authorRole(currentUserRole)
                 .content(request.getContent())
                 .createdAt(LocalDateTime.now())
@@ -83,15 +89,30 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private CommentResponse mapToResponse(Comment comment) {
+        String authorName = resolveAuthorName(comment);
+
         return new CommentResponse(
                 comment.getId(),
                 comment.getTicketId(),
                 comment.getAuthorId(),
-                comment.getAuthorName(),
+                authorName,
                 comment.getAuthorRole(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );
+    }
+
+    private String resolveAuthorName(Comment comment) {
+        UserAccount author = userAccountRepository.findById(comment.getAuthorId()).orElse(null);
+        if (author != null && author.getFullName() != null && !author.getFullName().isBlank()) {
+            return author.getFullName().trim();
+        }
+
+        if (comment.getAuthorName() != null && !comment.getAuthorName().isBlank()) {
+            return comment.getAuthorName().trim();
+        }
+
+        return comment.getAuthorId();
     }
 }

@@ -64,7 +64,7 @@ const HomePage = () => {
                 Dashboard
               </Link>
               <Link to="/resource" className="home-button home-button--ghost">
-                resourse
+                Resource
               </Link>
               {isAdmin() && (
                 <Link to="/admin" className="home-button home-button--ghost">
@@ -73,7 +73,7 @@ const HomePage = () => {
               )}
               {isAdmin() && (
                 <Link to="/admin-resources" className="home-button home-button--ghost">
-                  adminresource
+                  Admin Resources
                 </Link>
               )}
             </div>

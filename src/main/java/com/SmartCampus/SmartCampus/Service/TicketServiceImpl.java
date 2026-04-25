@@ -64,6 +64,7 @@ public class TicketServiceImpl implements TicketService {
                 .build();
 
         Ticket saved = ticketRepository.save(ticket);
+        createTicketCreatedNotifications(saved);
         return mapToTicketResponse(saved);
     }
 
@@ -184,7 +185,9 @@ public class TicketServiceImpl implements TicketService {
             ticket.setResolutionNotes(request.getResolutionNotes());
         }
 
-        return mapToTicketResponse(ticketRepository.save(ticket));
+        Ticket savedTicket = ticketRepository.save(ticket);
+        createAdminStatusNotifications(savedTicket);
+        return mapToTicketResponse(savedTicket);
     }
 
     @Override
@@ -214,6 +217,13 @@ public class TicketServiceImpl implements TicketService {
         notificationService.createNotification(
                 technician.getId(),
                 "You have been assigned a new ticket: " + savedTicket.getTitle(),
+                NotificationType.TICKET_ASSIGNED,
+                savedTicket.getId()
+        );
+
+        notificationService.createNotification(
+                savedTicket.getCreatedBy(),
+                "A technician was assigned to your ticket: " + technician.getFullName(),
                 NotificationType.TICKET_ASSIGNED,
                 savedTicket.getId()
         );
@@ -341,6 +351,42 @@ public class TicketServiceImpl implements TicketService {
                         ticket.getId()
                 );
             }
+        }
+    }
+
+    private void createTicketCreatedNotifications(Ticket ticket) {
+        notificationService.createNotification(
+                ticket.getCreatedBy(),
+                "Your ticket was created successfully: " + ticket.getTitle(),
+                NotificationType.TICKET_CREATED,
+                ticket.getId()
+        );
+
+        for (UserAccount admin : userAccountRepository.findByRoleIgnoreCase("ADMIN")) {
+            notificationService.createNotification(
+                    admin.getId(),
+                    "A new ticket was reported: " + ticket.getTitle(),
+                    NotificationType.TICKET_CREATED,
+                    ticket.getId()
+            );
+        }
+    }
+
+    private void createAdminStatusNotifications(Ticket ticket) {
+        notificationService.createNotification(
+                ticket.getCreatedBy(),
+                "Your ticket status changed to " + ticket.getStatus().name(),
+                NotificationType.TICKET_STATUS_UPDATED,
+                ticket.getId()
+        );
+
+        if (ticket.getAssignedTechnicianId() != null && !ticket.getAssignedTechnicianId().isBlank()) {
+            notificationService.createNotification(
+                    ticket.getAssignedTechnicianId(),
+                    "Ticket status was updated by admin: " + ticket.getStatus().name(),
+                    NotificationType.TICKET_STATUS_UPDATED,
+                    ticket.getId()
+            );
         }
     }
 

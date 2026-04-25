@@ -10,6 +10,7 @@ public record NotificationResponse(
         NotificationType type,
         boolean read,
         String ticketId,
+        String resourceId,
         LocalDateTime createdAt
 ) {
 }
