@@ -51,6 +51,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void createNotification(String userId, String message, NotificationType type, String ticketId) {
+        createNotification(userId, message, type, ticketId, null);
+    }
+
+    @Override
+    public void createNotification(String userId, String message, NotificationType type, String ticketId, String resourceId) {
         if (userId == null || userId.isBlank()) {
             return;
         }
@@ -61,6 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(type)
                 .read(false)
                 .ticketId(ticketId)
+                .resourceId(resourceId)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -74,6 +80,7 @@ public class NotificationServiceImpl implements NotificationService {
                 notification.getType(),
                 notification.isRead(),
                 notification.getTicketId(),
+                notification.getResourceId(),
                 notification.getCreatedAt()
         );
     }

@@ -30,5 +30,6 @@ public class Notification {
     private NotificationType type;
     private boolean read;
     private String ticketId;
+    private String resourceId;
     private LocalDateTime createdAt;
 }

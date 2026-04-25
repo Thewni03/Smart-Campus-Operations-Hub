@@ -46,21 +46,27 @@ public class AdminAccountInitializer implements CommandLineRunner {
         }
 
         String normalizedEmail = adminEmail.trim().toLowerCase();
-        if (userAccountRepository.existsByEmail(normalizedEmail)) {
-            log.info("Admin seed skipped because an account already exists for {}", normalizedEmail);
-            return;
-        }
+        UserAccount admin = userAccountRepository.findByEmail(normalizedEmail).orElseGet(UserAccount::new);
 
-        UserAccount admin = new UserAccount();
+        boolean isNewAccount = admin.getId() == null;
+
         admin.setFullName(adminFullName.trim());
         admin.setEmail(normalizedEmail);
         admin.setRole("ADMIN");
         admin.setOauthProvider("LOCAL");
         admin.setOauthId(normalizedEmail);
-        admin.setCreatedAt(LocalDateTime.now());
         admin.setPasswordHash(passwordEncoder.encode(adminPassword));
 
+        if (isNewAccount || admin.getCreatedAt() == null) {
+            admin.setCreatedAt(LocalDateTime.now());
+        }
+
         userAccountRepository.save(admin);
-        log.info("Admin account created for {}", normalizedEmail);
+
+        if (isNewAccount) {
+            log.info("Admin account created for {}", normalizedEmail);
+        } else {
+            log.info("Admin account refreshed for {}", normalizedEmail);
+        }
     }
 }

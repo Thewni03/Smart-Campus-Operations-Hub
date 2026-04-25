@@ -2,10 +2,13 @@ package com.SmartCampus.SmartCampus.Util;
 
 import com.SmartCampus.SmartCampus.Security.CurrentUserPrincipal;
 import com.SmartCampus.SmartCampus.Exception.UnauthorizedActionException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Utility to extract the current authenticated user from the Security context.
@@ -24,16 +27,34 @@ public class SecurityUtil {
     public CurrentUserPrincipal getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            Object principal = auth.getPrincipal();
+            if (principal instanceof CurrentUserPrincipal currentUserPrincipal) {
+                return currentUserPrincipal;
+            }
+        }
+
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
+        if (attributes == null) {
             throw new UnauthorizedActionException("User is not authenticated");
         }
 
-        Object principal = auth.getPrincipal();
-        if (principal instanceof CurrentUserPrincipal currentUserPrincipal) {
-            return currentUserPrincipal;
+        HttpServletRequest request = attributes.getRequest();
+        String userId = request.getHeader("X-User-Id");
+        String role = request.getHeader("X-User-Role");
+
+        if (userId == null || userId.isBlank() || role == null || role.isBlank()) {
+            throw new UnauthorizedActionException("User is not authenticated");
         }
 
-        throw new UnauthorizedActionException("User context is missing required identity information");
+        return new CurrentUserPrincipal(
+                userId.trim(),
+                request.getHeader("X-User-Name"),
+                request.getHeader("X-User-Email"),
+                role.trim().toUpperCase()
+        );
     }
 
     /**

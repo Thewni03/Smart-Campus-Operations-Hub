@@ -21,6 +21,7 @@ const LoginPage = () => {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [googleButtonReady, setGoogleButtonReady] = useState(false);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const finishLogin = (authUser) => {
@@ -109,6 +110,7 @@ const LoginPage = () => {
       });
 
       googleButtonRef.current.innerHTML = "";
+      setGoogleButtonReady(false);
       window.google.accounts.id.renderButton(googleButtonRef.current, {
         theme: "outline",
         size: "large",
@@ -116,6 +118,19 @@ const LoginPage = () => {
         text: "continue_with",
         width: 372,
       });
+
+      window.setTimeout(() => {
+        if (cancelled || !googleButtonRef.current) return;
+
+        const hasRenderedContent = googleButtonRef.current.childElementCount > 0;
+        setGoogleButtonReady(hasRenderedContent);
+
+        if (!hasRenderedContent) {
+          setMessage(
+            `Google sign-in is blocked for this origin. Add ${window.location.origin} to the OAuth client's Authorized JavaScript origins in Google Cloud Console.`
+          );
+        }
+      }, 800);
     };
 
     if (window.google?.accounts?.id) {
@@ -304,6 +319,19 @@ const LoginPage = () => {
                 textAlign: 'left',
               }}>
                 Google sign-in is not configured yet.
+              </p>
+            )}
+
+            {googleClientId && !googleButtonReady && !googleSubmitting && (
+              <p style={{
+                margin: 0,
+                padding: '12px 14px',
+                borderRadius: '14px',
+                background: '#fff6ea',
+                color: '#8a5412',
+                textAlign: 'left',
+              }}>
+                Google sign-in works only after this origin is allowed in Google Cloud Console.
               </p>
             )}
           </div>

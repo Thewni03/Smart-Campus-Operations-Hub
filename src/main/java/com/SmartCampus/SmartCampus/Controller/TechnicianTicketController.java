@@ -8,7 +8,6 @@ import com.SmartCampus.SmartCampus.Service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,13 +21,11 @@ public class TechnicianTicketController {
     private final TicketService ticketService;
 
     @GetMapping("/my")
-    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<ApiResponse<List<TicketResponse>>> getMyAssignedTickets() {
         return ResponseEntity.ok(ApiResponse.success("Assigned technician tickets retrieved", ticketService.getMyAssignedTechnicianTickets()));
     }
 
     @PatchMapping("/{ticketId}/status")
-    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<ApiResponse<TicketResponse>> updateTechnicianStatus(
             @PathVariable String ticketId,
             @Valid @RequestBody UpdateTicketStatusRequest request
@@ -37,7 +34,6 @@ public class TechnicianTicketController {
     }
 
     @PatchMapping("/{ticketId}/resolution")
-    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<ApiResponse<TicketResponse>> updateResolution(
             @PathVariable String ticketId,
             @Valid @RequestBody UpdateResolutionRequest request

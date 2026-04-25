@@ -12,8 +12,9 @@ const CommentItem = ({ comment, onEdit, onDelete }) => {
   const { user, isAdmin } = useAuth();
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
+  const displayRole = comment.authorRole?.replace(/^ROLE_/, "") || "USER";
 
-  const isOwner = user?.id === comment.authorId || user?.email === comment.authorId;
+  const isOwner = user?.userId === comment.authorId || user?.email === comment.authorId;
   const canManage = isOwner || isAdmin();
 
   const handleSave = () => {
@@ -33,7 +34,7 @@ const CommentItem = ({ comment, onEdit, onDelete }) => {
         <div className="flex items-baseline gap-2 mb-1">
           <span className="text-sm font-semibold text-gray-900">{comment.authorName}</span>
           <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roleColors[comment.authorRole]}`}>
-            {comment.authorRole}
+            {displayRole}
           </span>
           <span className="text-xs text-gray-400 ml-auto">{formatDateTime(comment.createdAt)}</span>
           {comment.updatedAt && (

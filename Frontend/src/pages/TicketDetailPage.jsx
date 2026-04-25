@@ -23,7 +23,6 @@ const TicketDetailPage = () => {
 
   const [statusForm, setStatusForm] = useState({ status:"", rejectionReason:"", resolutionNotes:"" });
   const [updatingStatus, setUpdating] = useState(false);
-  const [attachments, setAttachments] = useState([]);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
@@ -195,12 +194,12 @@ const TicketDetailPage = () => {
                 <AttachmentGrid
                   ticketId={id}
                   attachments={ticket.attachments||[]}
-                  onDeleted={aid => setAttachments(p=>p.filter(a=>a.id!==aid))}
+                  onDeleted={() => refetch()}
                 />
                 <AttachmentUpload
                   ticketId={id}
                   currentCount={ticket.attachments?.length||0}
-                  onUploaded={att => setAttachments(p=>[...p,att])}
+                  onUploaded={() => refetch()}
                 />
               </div>
             </div>
@@ -225,7 +224,7 @@ const TicketDetailPage = () => {
                 {[
                   { k:"Category", v: ticket.category },
                   { k:"Location", v: ticket.location || "—" },
-                  { k:"Reported by", v: ticket.reportedBy },
+                  { k:"Reported by", v: ticket.createdByName || ticket.reportedBy || "—" },
                   { k:"Assigned to", v: ticket.assignedTechnicianName || ticket.assignedTechnicianId || ticket.assignedTo || "—", warn: !assignedTechnicianId },
                   { k:"Contact", v: ticket.contactDetails || "—" },
                   { k:"Created", v: formatDateTime(ticket.createdAt) },
