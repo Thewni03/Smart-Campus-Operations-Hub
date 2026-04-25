@@ -23,6 +23,9 @@ public class Booking {
     private String resourceId;
     private String userId;
 
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
     private LocalDate bookingDate;
     private LocalTime startTime;
     private LocalTime endTime;

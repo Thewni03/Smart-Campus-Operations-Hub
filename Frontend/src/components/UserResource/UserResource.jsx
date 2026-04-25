@@ -1,8 +1,9 @@
-// filename: src/components/UserResource.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mandala from "../../assets/mandala.png";
 
 const UserResource = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     search: '',
     type: '',
@@ -704,6 +705,7 @@ const UserResource = () => {
                       e.currentTarget.style.boxShadow = 'none';
                     }
                   }}
+                  onClick={() => navigate(`/book?resourceId=${resource.location}`)}
                 >
                   {resource.status === 'OUT_OF_SERVICE' ? 'Not Available' : 'Book Now →'}
                 </button>
