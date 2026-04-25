@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 
 export default function BookingForm() {
   const { user } = useAuth();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialResourceId = queryParams.get('resourceId') || '';
+
   const actualUserId = user?.userId || 'user123';
 
   const [formData, setFormData] = useState({
-    resourceId: '',
+    resourceId: initialResourceId,
     bookingDate: '',
     startTime: '',
     endTime: '',
@@ -16,6 +21,9 @@ export default function BookingForm() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  
+  // Get today's date in YYYY-MM-DD format to prevent past date bookings
+  const today = new Date().toISOString().split("T")[0];
   
   // State for user's past bookings
   const [myBookings, setMyBookings] = useState([]);
@@ -47,6 +55,13 @@ export default function BookingForm() {
     setLoading(true);
     setMessage('');
     
+    // Custom Validation: End time must be after start time
+    if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
+      setMessage('error: End Time must be strictly after Start Time.');
+      setLoading(false);
+      return;
+    }
+
     // Convert expectedAttendees string to actual number before sending
     const payload = {
         ...formData,
@@ -116,6 +131,7 @@ export default function BookingForm() {
                   name="bookingDate"
                   type="date"
                   required
+                  min={today}
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
                   value={formData.bookingDate}
                   onChange={handleChange}
@@ -170,8 +186,9 @@ export default function BookingForm() {
                   name="purpose"
                   required
                   rows="3"
+                  maxLength="200"
                   className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200 resize-none"
-                  placeholder="e.g. Group meeting for PAF Assignment"
+                  placeholder="e.g. Group meeting for PAF Assignment (max 200 chars)"
                   value={formData.purpose}
                   onChange={handleChange}
                 ></textarea>
