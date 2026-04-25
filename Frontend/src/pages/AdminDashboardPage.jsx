@@ -7,6 +7,7 @@ import { StatusBadge, PriorityBadge } from "../components/tickets/TicketStatusBa
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import AdminResource from "../components/Adminresource/Adminresource";
+import BookingDashboard from "../components/Bookings/BookingDashboard";
 
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "◫" },
@@ -694,37 +695,6 @@ const AdminDashboardPage = () => {
     );
   };
 
-  const renderBookings = () => (
-    <section style={{ ...panel, padding: "28px", minHeight: "620px", display: "grid", placeItems: "center" }}>
-      <div style={{ maxWidth: "560px", textAlign: "center" }}>
-        <div
-          style={{
-            width: "88px",
-            height: "88px",
-            margin: "0 auto 22px",
-            borderRadius: "28px",
-            display: "grid",
-            placeItems: "center",
-            background: "linear-gradient(135deg, #4e94ff, #2358c5)",
-            color: "#fff",
-            fontSize: "2rem",
-            boxShadow: "0 18px 36px rgba(55, 125, 255, 0.22)",
-          }}
-        >
-          ◧
-        </div>
-        <h2 style={{ margin: 0, color: "#1e2c4f", fontSize: "2rem", letterSpacing: "-0.04em" }}>
-          Booking module not currently available
-        </h2>
-        <p style={{ margin: "14px 0 0", color: "#72829c", lineHeight: 1.7 }}>
-          The sidebar includes Bookings as requested, but this system does not have booking data yet.
-          When booking functionality is added later, this panel can show room bookings, lab reservations,
-          and approval actions in the same layout.
-        </p>
-      </div>
-    </section>
-  );
-
   const renderTickets = () => (
     <>
       <section style={{ ...panel, padding: "22px", marginBottom: "18px" }}>
@@ -1047,11 +1017,8 @@ const AdminDashboardPage = () => {
                 <button
                   key={item.id}
                   onClick={() => {
-                    if (item.id === "bookings") {
-                      navigate("/admin-bookings");
-                    } else {
-                      setActiveSection(item.id);
-                    }
+                    setActiveSection(item.id);
+                    navigate(`/admin?section=${item.id}`, { replace: true });
                   }}
                   style={sidebarLink(activeSection === item.id)}
                 >
@@ -1156,7 +1123,7 @@ const AdminDashboardPage = () => {
             </div>
 
             {activeSection === "dashboard" && renderDashboard()}
-            {activeSection === "bookings" && renderBookings()}
+            {activeSection === "bookings" && <BookingDashboard />}
             {activeSection === "tickets" && renderTickets()}
             {activeSection === "resources" && <AdminResource />}
             {activeSection === "users" && renderUsers()}

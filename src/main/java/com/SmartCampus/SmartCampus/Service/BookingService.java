@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class BookingService {
@@ -38,8 +39,10 @@ public class BookingService {
 
         bookingRequest.setStatus(BookingStatus.PENDING);
         bookingRequest.setCreatedAt(LocalDateTime.now());
-        
-        return bookingRepository.save(bookingRequest);
+
+        Booking savedBooking = bookingRepository.save(bookingRequest);
+        createBookingCreatedNotifications(savedBooking);
+        return savedBooking;
     }
 
     public java.util.List<Booking> getAllBookings() {
@@ -89,6 +92,13 @@ public class BookingService {
                     NotificationType.BOOKING_REJECTED,
                     null
             );
+        } else if (status == BookingStatus.CANCELLED) {
+            notificationService.createNotification(
+                    savedBooking.getUserId(),
+                    "Your booking for " + savedBooking.getResourceId() + " has been cancelled.",
+                    NotificationType.BOOKING_CANCELLED,
+                    null
+            );
         }
 
         return savedBooking;
@@ -101,5 +111,24 @@ public class BookingService {
             throw new RuntimeException("Can only delete PENDING bookings.");
         }
         bookingRepository.deleteById(id);
+    }
+
+    private void createBookingCreatedNotifications(Booking booking) {
+        notificationService.createNotification(
+                booking.getUserId(),
+                "Your booking request for " + booking.getResourceId() + " was submitted.",
+                NotificationType.BOOKING_CREATED,
+                null
+        );
+
+        List<UserAccount> admins = userAccountRepository.findByRoleIgnoreCase("ADMIN");
+        for (UserAccount admin : admins) {
+            notificationService.createNotification(
+                    admin.getId(),
+                    "New booking request received for " + booking.getResourceId(),
+                    NotificationType.BOOKING_CREATED,
+                    null
+            );
+        }
     }
 }

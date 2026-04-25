@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
+import { getResources } from '../../api/resourceApi';
 
 export default function BookingForm() {
   const { user } = useAuth();
@@ -9,7 +10,7 @@ export default function BookingForm() {
   const queryParams = new URLSearchParams(location.search);
   const initialResourceId = queryParams.get('resourceId') || '';
 
-  const actualUserId = user?.userId || 'user123';
+  const actualUserId = user?.userId || '';
 
   const [formData, setFormData] = useState({
     resourceId: initialResourceId,
@@ -21,28 +22,46 @@ export default function BookingForm() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  
-  // Get today's date in YYYY-MM-DD format to prevent past date bookings
+  const [resources, setResources] = useState([]);
+
   const today = new Date().toISOString().split("T")[0];
-  
-  // State for user's past bookings
+
   const [myBookings, setMyBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
+
+  const resourceMap = Object.fromEntries(resources.map(r => [r.id, r]));
+  const hasPrefilledResource = Boolean(initialResourceId);
+  const selectedResource = resourceMap[formData.resourceId];
+
+  useEffect(() => {
+    setFormData((current) => ({
+      ...current,
+      resourceId: initialResourceId || current.resourceId,
+    }));
+  }, [initialResourceId]);
 
   const fetchMyBookings = async () => {
     try {
       const res = await axiosInstance.get(`/bookings?userId=${actualUserId}`);
-      if (res.data.success) {
-        setMyBookings(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching my bookings:', error);
+      if (res.data.success) setMyBookings(res.data.data);
+    } catch {
+      // keep existing list
     } finally {
       setLoadingBookings(false);
     }
   };
 
   useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const res = await getResources();
+        const list = Array.isArray(res) ? res : res?.data || [];
+        setResources(list.filter(r => r.status !== 'OUT_OF_SERVICE'));
+      } catch {
+        setResources([]);
+      }
+    };
+    fetchResources();
     fetchMyBookings();
   }, [actualUserId]);
 
@@ -73,7 +92,15 @@ export default function BookingForm() {
       const response = await axiosInstance.post('/bookings', payload);
       if (response.data.success) {
         setMessage('success: ' + response.data.message);
-        setFormData({ ...formData, resourceId: '', bookingDate: '', startTime: '', endTime: '', expectedAttendees: '', purpose: '' });
+        setFormData({
+          ...formData,
+          resourceId: hasPrefilledResource ? initialResourceId : '',
+          bookingDate: '',
+          startTime: '',
+          endTime: '',
+          expectedAttendees: '',
+          purpose: '',
+        });
         fetchMyBookings(); // Refresh the list instantly
       }
     } catch (error) {
@@ -110,19 +137,40 @@ export default function BookingForm() {
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-5 rounded-md shadow-sm">
-              <div>
-                <label htmlFor="resourceId" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Resource ID</label>
-                <input
-                  id="resourceId"
-                  name="resourceId"
-                  type="text"
-                  required
-                  className="appearance-none relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
-                  placeholder="e.g. ROOM-101"
-                  value={formData.resourceId}
-                  onChange={handleChange}
-                />
-              </div>
+              {hasPrefilledResource ? (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 ml-1 mb-1">Selected Resource</label>
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-sm text-slate-800">
+                    <div className="font-semibold">
+                      {selectedResource?.name || `Resource #${formData.resourceId}`}
+                    </div>
+                    <div className="mt-1 text-slate-600">
+                      {selectedResource
+                        ? `${selectedResource.type} (${selectedResource.location})`
+                        : "Loaded from the resource page selection"}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label htmlFor="resourceId" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Resource</label>
+                  <select
+                    id="resourceId"
+                    name="resourceId"
+                    required
+                    className="appearance-none relative block w-full px-4 py-3 border border-slate-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/50 backdrop-blur-sm transition-all duration-200"
+                    value={formData.resourceId}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select a resource…</option>
+                    {resources.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} — {r.type} ({r.location})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               
               <div>
                 <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-700 ml-1 mb-1">Booking Date</label>
@@ -244,7 +292,7 @@ export default function BookingForm() {
                  <div key={booking.id} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
                     <div className="flex justify-between items-start mb-3">
                        <div>
-                          <h3 className="text-lg font-bold text-slate-800">{booking.resourceId}</h3>
+                          <h3 className="text-lg font-bold text-slate-800">{resourceMap[booking.resourceId]?.name || booking.resourceId}</h3>
                           <div className="text-xs text-slate-500 mt-1">{booking.purpose}</div>
                        </div>
                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(booking.status)}`}>

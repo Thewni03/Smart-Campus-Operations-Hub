@@ -72,6 +72,11 @@ const Navbar = () => {
 
     if (notification.resourceId || notification.type?.startsWith("RESOURCE_")) {
       navigate(isAdmin() ? "/admin-resources" : "/resource");
+      return;
+    }
+
+    if (notification.type?.startsWith("BOOKING_")) {
+      navigate(isAdmin() ? "/admin?section=bookings" : "/my-bookings");
     }
   };
 
@@ -129,7 +134,7 @@ const Navbar = () => {
               <div className="topbar__notification-header">
                 <div>
                   <strong>Activity Center</strong>
-                  <small>Your latest ticket and resource notifications</small>
+                  <small>Your latest ticket, booking, and resource notifications</small>
                 </div>
                 <button
                   type="button"
@@ -151,7 +156,7 @@ const Navbar = () => {
                 {!loading && notifications.length === 0 && (
                   <div className="topbar__notification-empty">
                     <strong>No updates yet</strong>
-                    <p>New ticket and resource updates will appear here.</p>
+                    <p>New ticket, booking, and resource updates will appear here.</p>
                   </div>
                 )}
 
